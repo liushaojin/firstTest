@@ -1,0 +1,55 @@
+2012.11.29  修改多帧接收的代码，intptr分配多帧内存空间
+IntPtr pt = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(VCI_CAN_OBJ)) * 50);
+
+2012.09.26  1001版      C# 使用不安全代码，结构体 内存
+修改收发多帧   
+C#中接收多帧数据，使用不安全代码，需要设定编译使用不安全代码
+
+1、修改结构体定义
+//2.定义CAN信息帧的数据类型。
+unsafe public struct VCI_CAN_OBJ  //使用不安全代码
+{
+    public uint ID;
+    public uint TimeStamp;
+    public byte TimeFlag;
+    public byte SendType;
+    public byte RemoteFlag;//是否是远程帧
+    public byte ExternFlag;//是否是扩展帧
+    public byte DataLen;
+
+    public fixed byte Data[8];
+
+    public fixed byte Reserved[3];
+
+}
+
+2、修改函数接口定义
+
+        //[DllImport("controlcan.dll")]
+        //static extern UInt32 VCI_Receive(UInt32 DeviceType, UInt32 DeviceInd, UInt32 CANInd, ref VCI_CAN_OBJ pReceive, UInt32 Len, Int32 WaitTime);
+        [DllImport("controlcan.dll", CharSet = CharSet.Ansi)]
+        static extern UInt32 VCI_Receive(UInt32 DeviceType, UInt32 DeviceInd, UInt32 CANInd, IntPtr pReceive, UInt32 Len, Int32 WaitTime);
+
+3、修改接收过程
+
+            IntPtr[] ptArray = new IntPtr[1];
+            ptArray[0] = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(VCI_CAN_OBJ)) * 50);
+            IntPtr pt = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(IntPtr)) * 1);
+
+            Marshal.Copy(ptArray, 0, pt, 1);
+
+
+            res = VCI_Receive(m_devtype, m_devind, m_canind, pt, 50/*50*/, 100);
+            ////////////////////////////////////////////////////////
+
+            String str = "";
+            for (UInt32 i = 0; i < res; i++)
+            {
+                VCI_CAN_OBJ obj = (VCI_CAN_OBJ)Marshal.PtrToStructure((IntPtr)((UInt32)pt + i * Marshal.SizeOf(typeof(VCI_CAN_OBJ))), typeof(VCI_CAN_OBJ));
+		…………
+		}
+
+            Marshal.FreeHGlobal(ptArray[0]);
+            Marshal.FreeHGlobal(pt);
+
+4、发送可能需要修改

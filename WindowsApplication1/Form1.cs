@@ -26,7 +26,6 @@ public struct VCI_BOARD_INFO
 }
 
 
-/////////////////////////////////////////////////////
 //2.定义CAN信息帧的数据类型。
 unsafe public struct VCI_CAN_OBJ  //使用不安全代码
 {
@@ -122,74 +121,32 @@ namespace WindowsApplication1
 {
     public partial class Form1 : Form
     {
-        const int VCI_PCI5121 = 1;
-        const int VCI_PCI9810 = 2;
+        //const int VCI_PCI5121 = 1;
+        //const int VCI_PCI9810 = 2;
         const int VCI_USBCAN1 = 3;
         const int VCI_USBCAN2 = 4;
         const int VCI_USBCAN2A = 4;
-        const int VCI_PCI9820 = 5;
-        const int VCI_CAN232 = 6;
-        const int VCI_PCI5110 = 7;
-        const int VCI_CANLITE = 8;
-        const int VCI_ISA9620 = 9;
-        const int VCI_ISA5420 = 10;
-        const int VCI_PC104CAN = 11;
-        const int VCI_CANETUDP = 12;
-        const int VCI_CANETE = 12;
-        const int VCI_DNP9810 = 13;
-        const int VCI_PCI9840 = 14;
-        const int VCI_PC104CAN2 = 15;
-        const int VCI_PCI9820I = 16;
-        const int VCI_CANETTCP = 17;
-        const int VCI_PEC9920 = 18;
-        const int VCI_PCI5010U = 19;
-        const int VCI_USBCAN_E_U = 20;
-        const int VCI_USBCAN_2E_U = 21;
-        const int VCI_PCI5020U = 22;
-        const int VCI_EG20T_CAN = 23;
-        const int VCI_PCIE9221 = 24;
-        //         / <summary>
-        //                 ///
-        //                 /// </summary>
-        //                 /// <param name="DeviceType"></param>
-        //                 /// <param name="DeviceInd"></param>
-        //                 /// <param name="Reserved"></param>
-        //                 /// <returns></returns>
-        //                 [DllImport("controlcan.dll")]
-        //                 static extern UInt32 VCI_OpenDevice(UInt32 DeviceType, UInt32 DeviceInd, UInt32 Reserved);
-        //                 [DllImport("controlcan.dll")]
-        //                 static extern UInt32 VCI_CloseDevice(UInt32 DeviceType, UInt32 DeviceInd);
-        //                 [DllImport("controlcan.dll")]
-        //                 static extern UInt32 VCI_InitCAN(UInt32 DeviceType, UInt32 DeviceInd, UInt32 CANInd, ref VCI_INIT_CONFIG pInitConfig);
-        //                 [DllImport("controlcan.dll")]
-        //                 static extern UInt32 VCI_ReadBoardInfo(UInt32 DeviceType, UInt32 DeviceInd, ref VCI_BOARD_INFO pInfo);
-        //                 [DllImport("controlcan.dll")]
-        //                 static extern UInt32 VCI_ReadErrInfo(UInt32 DeviceType, UInt32 DeviceInd, UInt32 CANInd, ref VCI_ERR_INFO pErrInfo);
-        //                 [DllImport("controlcan.dll")]
-        //                 static extern UInt32 VCI_ReadCANStatus(UInt32 DeviceType, UInt32 DeviceInd, UInt32 CANInd, ref VCI_CAN_STATUS pCANStatus);
-        //
-        //                 [DllImport("controlcan.dll")]
-        //                 static extern UInt32 VCI_GetReference(UInt32 DeviceType, UInt32 DeviceInd, UInt32 CANInd, UInt32 RefType, ref byte pData);
-        //                 [DllImport("controlcan.dll")]
-        //                 static extern UInt32 VCI_SetReference(UInt32 DeviceType, UInt32 DeviceInd, UInt32 CANInd, UInt32 RefType, ref byte pData);
-        //
-        //                 [DllImport("controlcan.dll")]
-        //                 static extern UInt32 VCI_GetReceiveNum(UInt32 DeviceType, UInt32 DeviceInd, UInt32 CANInd);
-        //                 [DllImport("controlcan.dll")]
-        //                 static extern UInt32 VCI_ClearBuffer(UInt32 DeviceType, UInt32 DeviceInd, UInt32 CANInd);
-        //
-        //                 [DllImport("controlcan.dll")]
-        //                 static extern UInt32 VCI_StartCAN(UInt32 DeviceType, UInt32 DeviceInd, UInt32 CANInd);
-        //                 [DllImport("controlcan.dll")]
-        //                 static extern UInt32 VCI_ResetCAN(UInt32 DeviceType, UInt32 DeviceInd, UInt32 CANInd);
-        //
-        //                 [DllImport("controlcan.dll")]
-        //                 static extern UInt32 VCI_Transmit(UInt32 DeviceType, UInt32 DeviceInd, UInt32 CANInd, ref VCI_CAN_OBJ pSend, UInt32 Len);
-        //
-        //                 //[DllImport("controlcan.dll")]
-        //                 //static extern UInt32 VCI_Receive(UInt32 DeviceType, UInt32 DeviceInd, UInt32 CANInd, ref VCI_CAN_OBJ pReceive, UInt32 Len, Int32 WaitTime);
-        //                 [DllImport("controlcan.dll", CharSet = CharSet.Ansi)]
-        //                 static extern UInt32 VCI_Receive(UInt32 DeviceType, UInt32 DeviceInd, UInt32 CANInd, IntPtr pReceive, UInt32 Len, Int32 WaitTime);
+        //const int VCI_PCI9820 = 5;
+        //const int VCI_CAN232 = 6;
+        //const int VCI_PCI5110 = 7;
+        //const int VCI_CANLITE = 8;
+        //const int VCI_ISA9620 = 9;
+        //const int VCI_ISA5420 = 10;
+        //const int VCI_PC104CAN = 11;
+        //const int VCI_CANETUDP = 12;
+        //const int VCI_CANETE = 12;
+        //const int VCI_DNP9810 = 13;
+        //const int VCI_PCI9840 = 14;
+        //const int VCI_PC104CAN2 = 15;
+        //const int VCI_PCI9820I = 16;
+        //const int VCI_CANETTCP = 17;
+        //const int VCI_PEC9920 = 18;
+        //const int VCI_PCI5010U = 19;
+        //const int VCI_USBCAN_E_U = 20;
+        //const int VCI_USBCAN_2E_U = 21;
+        //const int VCI_PCI5020U = 22;
+        //const int VCI_EG20T_CAN = 23;
+        //const int VCI_PCIE9221 = 24;
 
         static UInt32 m_devtype = 4;//USBCAN2
 
@@ -203,6 +160,7 @@ namespace WindowsApplication1
 
         public Form1()
         {
+            this.StartPosition = FormStartPosition.CenterScreen;
             InitializeComponent();
         }
 
@@ -222,93 +180,92 @@ namespace WindowsApplication1
             textBox_ID.Text = "00000123";
             textBox_Data.Text = "00 01 02 03 04 05 06 07 ";
 
-            //
             Int32 curindex = 0;
             comboBox_devtype.Items.Clear();
 
-            curindex = comboBox_devtype.Items.Add ( "VCI_PCI5121" );
-            m_arrdevtype[curindex] = VCI_PCI5121;
-            //comboBox_devtype.Items[0] = "VCI_PCI5121";
-            //m_arrdevtype[0]=  VCI_PCI5121 ;
+            //curindex = comboBox_devtype.Items.Add ( "VCI_PCI5121" );
+            //m_arrdevtype[curindex] = VCI_PCI5121;
+            ////comboBox_devtype.Items[0] = "VCI_PCI5121";
+            ////m_arrdevtype[0]=  VCI_PCI5121 ;
 
-            curindex = comboBox_devtype.Items.Add ( "VCI_PCI9810" );
-            m_arrdevtype[curindex] = VCI_PCI9810 ;
-            //comboBox_devtype.Items[1] = "VCI_PCI9810";
-            //m_arrdevtype[1]=  VCI_PCI9810 ;
+            //curindex = comboBox_devtype.Items.Add ( "VCI_PCI9810" );
+            //m_arrdevtype[curindex] = VCI_PCI9810 ;
+            ////comboBox_devtype.Items[1] = "VCI_PCI9810";
+            ////m_arrdevtype[1]=  VCI_PCI9810 ;
 
-            curindex = comboBox_devtype.Items.Add ( "VCI_USBCAN1(I+)" );
+            curindex = comboBox_devtype.Items.Add ( "USBCAN-1" );
             m_arrdevtype[curindex] =  VCI_USBCAN1;
             //comboBox_devtype.Items[2] = "VCI_USBCAN1";
             //m_arrdevtype[2]=  VCI_USBCAN1 ;
 
-            curindex = comboBox_devtype.Items.Add ( "VCI_USBCAN2(II+)" );
+            curindex = comboBox_devtype.Items.Add ( "USBCAN-2I" );
             m_arrdevtype[curindex] = VCI_USBCAN2 ;
             //comboBox_devtype.Items[3] = "VCI_USBCAN2";
             //m_arrdevtype[3]=  VCI_USBCAN2 ;
 
-            curindex = comboBox_devtype.Items.Add ( "VCI_USBCAN2A" );
+            curindex = comboBox_devtype.Items.Add ( "USBCAN-2A" );
             m_arrdevtype[curindex] = VCI_USBCAN2A ;
             //comboBox_devtype.Items[4] = "VCI_USBCAN2A";
             //m_arrdevtype[4]=  VCI_USBCAN2A ;
 
-            curindex = comboBox_devtype.Items.Add ( "VCI_PCI9820" );
-            m_arrdevtype[curindex] = VCI_PCI9820 ;
-            //comboBox_devtype.Items[5] = "VCI_PCI9820";
-            //m_arrdevtype[5]=  VCI_PCI9820 ;
+            //curindex = comboBox_devtype.Items.Add ( "VCI_PCI9820" );
+            //m_arrdevtype[curindex] = VCI_PCI9820 ;
+            ////comboBox_devtype.Items[5] = "VCI_PCI9820";
+            ////m_arrdevtype[5]=  VCI_PCI9820 ;
 
-            curindex = comboBox_devtype.Items.Add ( "VCI_PCI5110" );
-            m_arrdevtype[curindex] = VCI_PCI5110 ;
-            //comboBox_devtype.Items[6] = "VCI_PCI5110";
-            //m_arrdevtype[6]=  VCI_PCI5110 ;
+            //curindex = comboBox_devtype.Items.Add ( "VCI_PCI5110" );
+            //m_arrdevtype[curindex] = VCI_PCI5110 ;
+            ////comboBox_devtype.Items[6] = "VCI_PCI5110";
+            ////m_arrdevtype[6]=  VCI_PCI5110 ;
 
-            curindex = comboBox_devtype.Items.Add ( "VCI_CANLITE" );
-            m_arrdevtype[curindex] = VCI_CANLITE;
+            //curindex = comboBox_devtype.Items.Add ( "VCI_CANLITE" );
+            //m_arrdevtype[curindex] = VCI_CANLITE;
 
-            curindex = comboBox_devtype.Items.Add ( "VCI_ISA9620" );
-            m_arrdevtype[curindex] = VCI_ISA9620 ;
-            //comboBox_devtype.Items[7] = "VCI_ISA9620";
-            //m_arrdevtype[7]=  VCI_ISA9620 ;
+            //curindex = comboBox_devtype.Items.Add ( "VCI_ISA9620" );
+            //m_arrdevtype[curindex] = VCI_ISA9620 ;
+            ////comboBox_devtype.Items[7] = "VCI_ISA9620";
+            ////m_arrdevtype[7]=  VCI_ISA9620 ;
 
-            curindex = comboBox_devtype.Items.Add ( "VCI_ISA5420" );
-            m_arrdevtype[curindex] = VCI_ISA5420 ;
-            //comboBox_devtype.Items[8] = "VCI_ISA5420";
-            //m_arrdevtype[8]=  VCI_ISA5420 ;
+            //curindex = comboBox_devtype.Items.Add ( "VCI_ISA5420" );
+            //m_arrdevtype[curindex] = VCI_ISA5420 ;
+            ////comboBox_devtype.Items[8] = "VCI_ISA5420";
+            ////m_arrdevtype[8]=  VCI_ISA5420 ;
 
-            curindex = comboBox_devtype.Items.Add ( "VCI_PC104CAN" );
-            m_arrdevtype[curindex] = VCI_PC104CAN ;
-            //comboBox_devtype.Items[9] = "VCI_PC104CAN";
-            //m_arrdevtype[9]=  VCI_PC104CAN ;
+            //curindex = comboBox_devtype.Items.Add ( "VCI_PC104CAN" );
+            //m_arrdevtype[curindex] = VCI_PC104CAN ;
+            ////comboBox_devtype.Items[9] = "VCI_PC104CAN";
+            ////m_arrdevtype[9]=  VCI_PC104CAN ;
 
-            curindex = comboBox_devtype.Items.Add ( "VCI_DNP9810" );
-            m_arrdevtype[curindex] = VCI_DNP9810 ;
-            //comboBox_devtype.Items[10] = "VCI_DNP9810";
-            //m_arrdevtype[10]=  VCI_DNP9810 ;
+            //curindex = comboBox_devtype.Items.Add ( "VCI_DNP9810" );
+            //m_arrdevtype[curindex] = VCI_DNP9810 ;
+            ////comboBox_devtype.Items[10] = "VCI_DNP9810";
+            ////m_arrdevtype[10]=  VCI_DNP9810 ;
 
-            curindex = comboBox_devtype.Items.Add ( "VCI_PCI9840" );
-            m_arrdevtype[curindex] = VCI_PCI9840 ;
-            //comboBox_devtype.Items[11] = "VCI_PCI9840";
-            //m_arrdevtype[11]=   VCI_PCI9840;
+            //curindex = comboBox_devtype.Items.Add ( "VCI_PCI9840" );
+            //m_arrdevtype[curindex] = VCI_PCI9840 ;
+            ////comboBox_devtype.Items[11] = "VCI_PCI9840";
+            ////m_arrdevtype[11]=   VCI_PCI9840;
 
-            curindex = comboBox_devtype.Items.Add ( "VCI_PC104CAN2" );
-            m_arrdevtype[curindex] = VCI_PC104CAN2 ;
-            //comboBox_devtype.Items[12] = "VCI_PC104CAN2";
-            //m_arrdevtype[12]=  VCI_PC104CAN2 ;
+            //curindex = comboBox_devtype.Items.Add ( "VCI_PC104CAN2" );
+            //m_arrdevtype[curindex] = VCI_PC104CAN2 ;
+            ////comboBox_devtype.Items[12] = "VCI_PC104CAN2";
+            ////m_arrdevtype[12]=  VCI_PC104CAN2 ;
 
-            curindex = comboBox_devtype.Items.Add ( "VCI_PCI9820I" );
-            m_arrdevtype[curindex] = VCI_PCI9820I ;
-            //comboBox_devtype.Items[13] = "VCI_PCI9820I";
-            //m_arrdevtype[13]=  VCI_PCI9820I ;
+            //curindex = comboBox_devtype.Items.Add ( "VCI_PCI9820I" );
+            //m_arrdevtype[curindex] = VCI_PCI9820I ;
+            ////comboBox_devtype.Items[13] = "VCI_PCI9820I";
+            ////m_arrdevtype[13]=  VCI_PCI9820I ;
 
-            curindex = comboBox_devtype.Items.Add ( "VCI_PEC9920" );
-            m_arrdevtype[curindex] = VCI_PEC9920 ;
+            //curindex = comboBox_devtype.Items.Add ( "VCI_PEC9920" );
+            //m_arrdevtype[curindex] = VCI_PEC9920 ;
 
-            curindex = comboBox_devtype.Items.Add ( "VCI_PCIE9221" );
-            m_arrdevtype[curindex] = VCI_PCIE9221;
-            //comboBox_devtype.Items[14] = "VCI_PEC9920";
-            //m_arrdevtype[14]= VCI_PEC9920  ;
+            //curindex = comboBox_devtype.Items.Add ( "VCI_PCIE9221" );
+            //m_arrdevtype[curindex] = VCI_PCIE9221;
+            ////comboBox_devtype.Items[14] = "VCI_PEC9920";
+            ////m_arrdevtype[14]= VCI_PEC9920  ;
 
 
-            comboBox_devtype.SelectedIndex = 3;
+            comboBox_devtype.SelectedIndex = 1;
             comboBox_devtype.MaxDropDownItems = comboBox_devtype.Items.Count;
 
         }
@@ -370,7 +327,6 @@ namespace WindowsApplication1
 
             //res = VCI_Receive(m_devtype, m_devind, m_canind, ref m_recobj[0],50, 100);
 
-            /////////////////////////////////////
             UInt32 con_maxlen = 50;
             IntPtr pt = Marshal.AllocHGlobal ( Marshal.SizeOf ( typeof ( VCI_CAN_OBJ ) ) * ( Int32 ) con_maxlen );
 
@@ -378,7 +334,6 @@ namespace WindowsApplication1
 
 
             res = DllAdapte.VCI_Receive ( m_devtype, m_devind, m_canind, pt, con_maxlen, 100 );
-            ////////////////////////////////////////////////////////
 
             String str = "";
 
@@ -410,7 +365,6 @@ namespace WindowsApplication1
                     str += "扩展帧 ";
                 }
 
-                //////////////////////////////////////////
                 if ( obj.RemoteFlag == 0 )
                 {
                     str += "数据: ";

@@ -121,6 +121,8 @@ namespace WindowsApplication1
 {
     public partial class Form1 : Form
     {
+        /*DataHander p = new DataHander();*/
+
         //const int VCI_PCI5121 = 1;
         //const int VCI_PCI9810 = 2;
         const int VCI_USBCAN1 = 3;
@@ -166,6 +168,8 @@ namespace WindowsApplication1
 
         private void Form1_Load ( object sender, EventArgs e )
         {
+            DataHander p = new DataHander();
+
             comboBox_DevIndex.SelectedIndex = 0;
             comboBox_CANIndex.SelectedIndex = 0;
             textBox_AccCode.Text = "00000000";

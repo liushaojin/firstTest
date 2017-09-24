@@ -6,3 +6,4 @@ D:\SourceCode\usbcan\CAN接口卡通用开发库及例程\API Samples\c#(vs2005)
 D:\SourceCode\usbcan\CAN接口卡通用开发库及例程\API Samples\c#(vs2005)\firstTest\WindowsApplication1\obj\x64\Debug\WindowsApplication1.csproj.GenerateResource.Cache
 D:\SourceCode\usbcan\CAN接口卡通用开发库及例程\API Samples\c#(vs2005)\firstTest\WindowsApplication1\obj\x64\Debug\WindowsApplication1.exe
 D:\SourceCode\usbcan\CAN接口卡通用开发库及例程\API Samples\c#(vs2005)\firstTest\WindowsApplication1\obj\x64\Debug\WindowsApplication1.pdb
+D:\SourceCode\usbcan\CAN接口卡通用开发库及例程\API Samples\c#(vs2005)\firstTest\WindowsApplication1\obj\x64\Debug\WindowsApplication1.csprojResolveAssemblyReference.cache

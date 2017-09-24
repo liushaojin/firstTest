@@ -93,6 +93,16 @@ namespace WindowsApplication1
             //if (fileName == null || fileName == string.Empty || !(fileName.ToLower().EndsWith(".csv")))
             // fileName = GetRandomFileName();
             string data = ExportCSV();
+            HttpContext.Current.Response.ClearHeaders();
+            HttpContext.Current.Response.Clear();
+            HttpContext.Current.Response.Expires = 0;
+            HttpContext.Current.Response.BufferOutput = true;
+            HttpContext.Current.Response.Charset = "GB2312";
+            HttpContext.Current.Response.ContentEncoding = System.Text.Encoding.GetEncoding ( "GB2312" );
+            HttpContext.Current.Response.AppendHeader ( "Content-Disposition", string.Format ( "attachment;filename={0}.csv", System.Web.HttpUtility.UrlEncode ( fileName, System.Text.Encoding.UTF8 ) ) );
+            HttpContext.Current.Response.ContentType = "text/h323;charset=gbk";
+            HttpContext.Current.Response.Write ( data );
+            HttpContext.Current.Response.End();
         }
         #endregion
         /// <summary>

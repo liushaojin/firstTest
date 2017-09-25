@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -12,16 +12,17 @@ using System.Runtime.InteropServices;
 //1.ZLGCAN系列接口卡信息的数据类型。
 public struct VCI_BOARD_INFO
 {
-    public UInt16   hw_Version;
+    public UInt16 hw_Version;
     public UInt16 fw_Version;
     public UInt16 dr_Version;
     public UInt16 in_Version;
     public UInt16 irq_Num;
     public byte can_Num;
-    [MarshalAs ( UnmanagedType.ByValArray, SizeConst=20 )] public byte []str_Serial_Num;
-    [MarshalAs ( UnmanagedType.ByValArray, SizeConst = 40 )]
+    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 20)]
+    public byte[] str_Serial_Num;
+    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 40)]
     public byte[] str_hw_Type;
-    [MarshalAs ( UnmanagedType.ByValArray, SizeConst = 8 )]
+    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
     public byte[] Reserved;
 }
 
@@ -43,7 +44,7 @@ unsafe public struct VCI_CAN_OBJ  //使用不安全代码
 
 }
 ////2.定义CAN信息帧的数据类型。
-//public struct VCI_CAN_OBJ
+//public struct VCI_CAN_OBJ 
 //{
 //    public UInt32 ID;
 //    public UInt32 TimeStamp;
@@ -75,7 +76,7 @@ public struct VCI_CAN_STATUS
     public byte regEWLimit;
     public byte regRECounter;
     public byte regTECounter;
-    [MarshalAs ( UnmanagedType.ByValArray, SizeConst = 4 )]
+    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
     public byte[] Reserved;
 }
 
@@ -103,9 +104,9 @@ public struct VCI_INIT_CONFIG
 
 public struct CHGDESIPANDPORT
 {
-    [MarshalAs ( UnmanagedType.ByValArray, SizeConst = 10 )]
+    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
     public byte[] szpwd;
-    [MarshalAs ( UnmanagedType.ByValArray, SizeConst = 20 )]
+    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 20)]
     public byte[] szdesip;
     public Int32 desport;
 
@@ -116,66 +117,69 @@ public struct CHGDESIPANDPORT
     }
 }
 
+public struct CanBautRate
+{
+    public string timer0Str;
+    public string timer1Str;
+    public string bautRateStr;
+}
 
 namespace WindowsApplication1
 {
     public partial class Form1 : Form
     {
-        /*DataHander p = new DataHander();*/
+        public enum CanIndex
+        {
+            Can0,
+            Can1,
+        }
 
-        //const int VCI_PCI5121 = 1;
-        //const int VCI_PCI9810 = 2;
         const int VCI_USBCAN1 = 3;
         const int VCI_USBCAN2 = 4;
         const int VCI_USBCAN2A = 4;
-        //const int VCI_PCI9820 = 5;
-        //const int VCI_CAN232 = 6;
-        //const int VCI_PCI5110 = 7;
-        //const int VCI_CANLITE = 8;
-        //const int VCI_ISA9620 = 9;
-        //const int VCI_ISA5420 = 10;
-        //const int VCI_PC104CAN = 11;
-        //const int VCI_CANETUDP = 12;
-        //const int VCI_CANETE = 12;
-        //const int VCI_DNP9810 = 13;
-        //const int VCI_PCI9840 = 14;
-        //const int VCI_PC104CAN2 = 15;
-        //const int VCI_PCI9820I = 16;
-        //const int VCI_CANETTCP = 17;
-        //const int VCI_PEC9920 = 18;
-        //const int VCI_PCI5010U = 19;
-        //const int VCI_USBCAN_E_U = 20;
-        //const int VCI_USBCAN_2E_U = 21;
-        //const int VCI_PCI5020U = 22;
-        //const int VCI_EG20T_CAN = 23;
-        //const int VCI_PCIE9221 = 24;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="DeviceType"></param>
+        /// <param name="DeviceInd"></param>
+        /// <param name="Reserved"></param>
+        /// <returns></returns>
+        /// 
+        int mCan0SelectFlag = 0;
+        int mCan1SelectFlag = 0;   //can0 或者 can1是否选中的标志,以控制数据的接收
+
+        int mCan0BRIndex = 0;
+        int mCan1BRIndex = 0;
+        
         static UInt32 m_devtype = 4;//USBCAN2
+        static List<CanBautRate> canBautRateList = new List<CanBautRate>();
 
+        Byte m_filter = (Byte)0;
+        Byte m_mode = (Byte)0;
         UInt32 m_bOpen = 0;
         UInt32 m_devind = 0;
-        UInt32 m_canind = 0;
+        UInt32 m_canind = (UInt32)CanIndex.Can0;
+        
 
         VCI_CAN_OBJ[] m_recobj = new VCI_CAN_OBJ[50];
 
         UInt32[] m_arrdevtype = new UInt32[20];
 
+        //主窗口类的构造函数
         public Form1()
         {
             this.StartPosition = FormStartPosition.CenterScreen;
             InitializeComponent();
         }
 
-        private void Form1_Load ( object sender, EventArgs e )
+        //主窗口加载处理函数
+        private void Form1_Load(object sender, EventArgs e)
         {
-            DataHander p = new DataHander();
-
             comboBox_DevIndex.SelectedIndex = 0;
             comboBox_CANIndex.SelectedIndex = 0;
             textBox_AccCode.Text = "00000000";
             textBox_AccMask.Text = "FFFFFFFF";
-            textBox_Time0.Text = "00";
-            textBox_Time1.Text = "1C";
             comboBox_Filter.SelectedIndex = 1;
             comboBox_Mode.SelectedIndex = 0;
             comboBox_SendType.SelectedIndex = 2;
@@ -187,333 +191,393 @@ namespace WindowsApplication1
             Int32 curindex = 0;
             comboBox_devtype.Items.Clear();
 
-            //curindex = comboBox_devtype.Items.Add ( "VCI_PCI5121" );
-            //m_arrdevtype[curindex] = VCI_PCI5121;
-            ////comboBox_devtype.Items[0] = "VCI_PCI5121";
-            ////m_arrdevtype[0]=  VCI_PCI5121 ;
+            curindex = comboBox_devtype.Items.Add("USBCAN 1");
+            m_arrdevtype[curindex] = VCI_USBCAN1;
 
-            //curindex = comboBox_devtype.Items.Add ( "VCI_PCI9810" );
-            //m_arrdevtype[curindex] = VCI_PCI9810 ;
-            ////comboBox_devtype.Items[1] = "VCI_PCI9810";
-            ////m_arrdevtype[1]=  VCI_PCI9810 ;
+            curindex = comboBox_devtype.Items.Add("USBCAN II");
+            m_arrdevtype[curindex] = VCI_USBCAN2;
 
-            curindex = comboBox_devtype.Items.Add ( "USBCAN-1" );
-            m_arrdevtype[curindex] =  VCI_USBCAN1;
-            //comboBox_devtype.Items[2] = "VCI_USBCAN1";
-            //m_arrdevtype[2]=  VCI_USBCAN1 ;
-
-            curindex = comboBox_devtype.Items.Add ( "USBCAN-2I" );
-            m_arrdevtype[curindex] = VCI_USBCAN2 ;
-            //comboBox_devtype.Items[3] = "VCI_USBCAN2";
-            //m_arrdevtype[3]=  VCI_USBCAN2 ;
-
-            curindex = comboBox_devtype.Items.Add ( "USBCAN-2A" );
-            m_arrdevtype[curindex] = VCI_USBCAN2A ;
-            //comboBox_devtype.Items[4] = "VCI_USBCAN2A";
-            //m_arrdevtype[4]=  VCI_USBCAN2A ;
-
-            //curindex = comboBox_devtype.Items.Add ( "VCI_PCI9820" );
-            //m_arrdevtype[curindex] = VCI_PCI9820 ;
-            ////comboBox_devtype.Items[5] = "VCI_PCI9820";
-            ////m_arrdevtype[5]=  VCI_PCI9820 ;
-
-            //curindex = comboBox_devtype.Items.Add ( "VCI_PCI5110" );
-            //m_arrdevtype[curindex] = VCI_PCI5110 ;
-            ////comboBox_devtype.Items[6] = "VCI_PCI5110";
-            ////m_arrdevtype[6]=  VCI_PCI5110 ;
-
-            //curindex = comboBox_devtype.Items.Add ( "VCI_CANLITE" );
-            //m_arrdevtype[curindex] = VCI_CANLITE;
-
-            //curindex = comboBox_devtype.Items.Add ( "VCI_ISA9620" );
-            //m_arrdevtype[curindex] = VCI_ISA9620 ;
-            ////comboBox_devtype.Items[7] = "VCI_ISA9620";
-            ////m_arrdevtype[7]=  VCI_ISA9620 ;
-
-            //curindex = comboBox_devtype.Items.Add ( "VCI_ISA5420" );
-            //m_arrdevtype[curindex] = VCI_ISA5420 ;
-            ////comboBox_devtype.Items[8] = "VCI_ISA5420";
-            ////m_arrdevtype[8]=  VCI_ISA5420 ;
-
-            //curindex = comboBox_devtype.Items.Add ( "VCI_PC104CAN" );
-            //m_arrdevtype[curindex] = VCI_PC104CAN ;
-            ////comboBox_devtype.Items[9] = "VCI_PC104CAN";
-            ////m_arrdevtype[9]=  VCI_PC104CAN ;
-
-            //curindex = comboBox_devtype.Items.Add ( "VCI_DNP9810" );
-            //m_arrdevtype[curindex] = VCI_DNP9810 ;
-            ////comboBox_devtype.Items[10] = "VCI_DNP9810";
-            ////m_arrdevtype[10]=  VCI_DNP9810 ;
-
-            //curindex = comboBox_devtype.Items.Add ( "VCI_PCI9840" );
-            //m_arrdevtype[curindex] = VCI_PCI9840 ;
-            ////comboBox_devtype.Items[11] = "VCI_PCI9840";
-            ////m_arrdevtype[11]=   VCI_PCI9840;
-
-            //curindex = comboBox_devtype.Items.Add ( "VCI_PC104CAN2" );
-            //m_arrdevtype[curindex] = VCI_PC104CAN2 ;
-            ////comboBox_devtype.Items[12] = "VCI_PC104CAN2";
-            ////m_arrdevtype[12]=  VCI_PC104CAN2 ;
-
-            //curindex = comboBox_devtype.Items.Add ( "VCI_PCI9820I" );
-            //m_arrdevtype[curindex] = VCI_PCI9820I ;
-            ////comboBox_devtype.Items[13] = "VCI_PCI9820I";
-            ////m_arrdevtype[13]=  VCI_PCI9820I ;
-
-            //curindex = comboBox_devtype.Items.Add ( "VCI_PEC9920" );
-            //m_arrdevtype[curindex] = VCI_PEC9920 ;
-
-            //curindex = comboBox_devtype.Items.Add ( "VCI_PCIE9221" );
-            //m_arrdevtype[curindex] = VCI_PCIE9221;
-            ////comboBox_devtype.Items[14] = "VCI_PEC9920";
-            ////m_arrdevtype[14]= VCI_PEC9920  ;
+            curindex = comboBox_devtype.Items.Add("USBCAN 2A");
+            m_arrdevtype[curindex] = VCI_USBCAN2A;
 
 
             comboBox_devtype.SelectedIndex = 1;
             comboBox_devtype.MaxDropDownItems = comboBox_devtype.Items.Count;
-
+            InitBautRateList();
         }
 
-        private void Form1_FormClosed ( object sender, FormClosedEventArgs e )
+        //主窗口关闭处理函数
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            if ( m_bOpen==1 )
+            if (m_bOpen == 1)
             {
-                DllAdapte.VCI_CloseDevice ( m_devtype, m_devind );
+                DllAdapte.VCI_CloseDevice(m_devtype, m_devind);
             }
         }
-
-        private void buttonConnect_Click ( object sender, EventArgs e )
+        /// <summary>
+        /// 初始化波特率控件中的信息
+        /// </summary>
+        private void InitBautRateList()
         {
-            if ( m_bOpen==1 )
+            CanBautRate temp;
+
+            //初始化波特率列表项
+            if (canBautRateList.Count <= 0)
             {
-                DllAdapte.VCI_CloseDevice ( m_devtype, m_devind );
-                m_bOpen = 0;
+                temp.timer0Str = "0x03";
+                temp.timer1Str = "0x1C";
+                temp.bautRateStr = "125kbps";
+                canBautRateList.Add(temp);
+
+                temp.timer0Str = "0x01";
+                temp.timer1Str = "0x1C";
+                temp.bautRateStr = "250kbps";
+                canBautRateList.Add(temp);
+
+                temp.timer0Str = "0x00";
+                temp.timer1Str = "0x1C";
+                temp.bautRateStr = "500kbps";
+                canBautRateList.Add(temp);
             }
 
-            else
+            //添加波特率列表项
+            foreach (CanBautRate tem in canBautRateList)
             {
-                m_devtype = m_arrdevtype[comboBox_devtype.SelectedIndex];
-
-                m_devind= ( UInt32 ) comboBox_DevIndex.SelectedIndex;
-                m_canind = ( UInt32 ) comboBox_CANIndex.SelectedIndex;
-
-                if ( DllAdapte.VCI_OpenDevice ( m_devtype, m_devind, 0 ) == 0 )
-                {
-                    MessageBox.Show ( "打开设备失败,请检查设备类型和设备索引号是否正确", "错误",
-                                      MessageBoxButtons.OK, MessageBoxIcon.Exclamation );
-                    return;
-                }
-
-                m_bOpen = 1;
-                VCI_INIT_CONFIG config=new VCI_INIT_CONFIG();
-                config.AccCode=System.Convert.ToUInt32 ( "0x" + textBox_AccCode.Text, 16 );
-                config.AccMask = System.Convert.ToUInt32 ( "0x" + textBox_AccMask.Text, 16 );
-                config.Timing0 = System.Convert.ToByte ( "0x" + textBox_Time0.Text, 16 );
-                config.Timing1 = System.Convert.ToByte ( "0x" + textBox_Time1.Text, 16 );
-                config.Filter = ( Byte ) comboBox_Filter.SelectedIndex;
-                config.Mode = ( Byte ) comboBox_Mode.SelectedIndex;
-                DllAdapte.VCI_InitCAN ( m_devtype, m_devind, m_canind, ref config );
+                can0GrpBox.Items.Add(tem.bautRateStr);
+                can1GrpBox.Items.Add(tem.bautRateStr);
             }
 
-            buttonConnect.Text = m_bOpen==1?"断开":"连接";
-            timer_rec.Enabled = m_bOpen==1?true:false;
+            can0GrpBox.SelectedIndex = 0;
+            can1GrpBox.SelectedIndex = 1;
+            mCan0BRIndex = can0GrpBox.SelectedIndex;
+            mCan1BRIndex = can1GrpBox.SelectedIndex;
+
+            can0GrpBox.MaxDropDownItems = can0GrpBox.Items.Count;
+            can1GrpBox.MaxDropDownItems = can1GrpBox.Items.Count;
+
+            FillTimerTextBox();
         }
 
-        unsafe private void timer_rec_Tick ( object sender, EventArgs e )
+        //填充定时器控件的内容
+        private void FillTimerTextBox()
         {
-            UInt32 res = new UInt32();
-            res= DllAdapte.VCI_GetReceiveNum ( m_devtype, m_devind, m_canind );
+            can0T0TextBox.Text = canBautRateList[mCan0BRIndex].timer0Str;
+            can0T1TextBox.Text = canBautRateList[mCan0BRIndex].timer1Str;
+            can1T0TextBox.Text = canBautRateList[mCan1BRIndex].timer0Str;
+            can1T1TextBox.Text = canBautRateList[mCan1BRIndex].timer1Str;
+        }
+        /// <summary>
+        /// 内容条目增加时,滚动条自动跟随
+        /// </summary>
+        /// <param name="str"></param>
+        private void AddListBoxItem(string str)
+        {
+            bool isNeedScroll = false;  //是否需要滚动标志
 
-            if ( res==0 )
-            {
-                return;
-            }
+            if (this.RevListBox.TopIndex == this.RevListBox.Items.Count - (int)(this.RevListBox.Height / this.RevListBox.ItemHeight))
+                isNeedScroll = true;
 
-            //res = VCI_Receive(m_devtype, m_devind, m_canind, ref m_recobj[0],50, 100);
+            this.RevListBox.Items.Add(str);
 
-            UInt32 con_maxlen = 50;
-            IntPtr pt = Marshal.AllocHGlobal ( Marshal.SizeOf ( typeof ( VCI_CAN_OBJ ) ) * ( Int32 ) con_maxlen );
+            if (isNeedScroll)
+                this.RevListBox.TopIndex = this.RevListBox.Items.Count - (int)(this.RevListBox.Height / this.RevListBox.ItemHeight);
+        }
 
-
-
-
-            res = DllAdapte.VCI_Receive ( m_devtype, m_devind, m_canind, pt, con_maxlen, 100 );
-
+        unsafe private void ReceiveDataHandle(UInt32 data, IntPtr pt)
+        {
             String str = "";
-
-            for ( UInt32 i = 0; i < res; i++ )
+            for (UInt32 i = 0; i < data; i++)
             {
-                VCI_CAN_OBJ obj = ( VCI_CAN_OBJ ) Marshal.PtrToStructure ( ( IntPtr ) ( ( UInt32 ) pt + i * Marshal.SizeOf ( typeof ( VCI_CAN_OBJ ) ) ), typeof ( VCI_CAN_OBJ ) );
+                VCI_CAN_OBJ obj = (VCI_CAN_OBJ)Marshal.PtrToStructure((IntPtr)((UInt32)pt + i * Marshal.SizeOf(typeof(VCI_CAN_OBJ))), typeof(VCI_CAN_OBJ));
 
                 str = "接收到数据: ";
-                str += "  帧ID:0x" + System.Convert.ToString ( ( Int32 ) obj.ID, 16 );
+                str += "  帧ID:0x" + System.Convert.ToString((Int32)obj.ID, 16);
                 str += "  帧格式:";
-
-                if ( obj.RemoteFlag == 0 )
-                {
+                if (obj.RemoteFlag == 0)
                     str += "数据帧 ";
-                }
-
                 else
-                {
                     str += "远程帧 ";
-                }
-
-                if ( obj.ExternFlag == 0 )
-                {
+                if (obj.ExternFlag == 0)
                     str += "标准帧 ";
-                }
-
                 else
-                {
                     str += "扩展帧 ";
-                }
 
-                if ( obj.RemoteFlag == 0 )
+                if (obj.RemoteFlag == 0)
                 {
                     str += "数据: ";
-                    byte len = ( byte ) ( obj.DataLen % 9 );
+                    byte len = (byte)(obj.DataLen % 9);
                     byte j = 0;
-
-                    if ( j++ < len )
-                    {
-                        str += " " + System.Convert.ToString ( obj.Data[0], 16 );
-                    }
-
-                    if ( j++ < len )
-                    {
-                        str += " " + System.Convert.ToString ( obj.Data[1], 16 );
-                    }
-
-                    if ( j++ < len )
-                    {
-                        str += " " + System.Convert.ToString ( obj.Data[2], 16 );
-                    }
-
-                    if ( j++ < len )
-                    {
-                        str += " " + System.Convert.ToString ( obj.Data[3], 16 );
-                    }
-
-                    if ( j++ < len )
-                    {
-                        str += " " + System.Convert.ToString ( obj.Data[4], 16 );
-                    }
-
-                    if ( j++ < len )
-                    {
-                        str += " " + System.Convert.ToString ( obj.Data[5], 16 );
-                    }
-
-                    if ( j++ < len )
-                    {
-                        str += " " + System.Convert.ToString ( obj.Data[6], 16 );
-                    }
-
-                    if ( j++ < len )
-                    {
-                        str += " " + System.Convert.ToString ( obj.Data[7], 16 );
-                    }
+                    if (j++ < len)
+                        str += " " + System.Convert.ToString(obj.Data[0], 16);
+                    if (j++ < len)
+                        str += " " + System.Convert.ToString(obj.Data[1], 16);
+                    if (j++ < len)
+                        str += " " + System.Convert.ToString(obj.Data[2], 16);
+                    if (j++ < len)
+                        str += " " + System.Convert.ToString(obj.Data[3], 16);
+                    if (j++ < len)
+                        str += " " + System.Convert.ToString(obj.Data[4], 16);
+                    if (j++ < len)
+                        str += " " + System.Convert.ToString(obj.Data[5], 16);
+                    if (j++ < len)
+                        str += " " + System.Convert.ToString(obj.Data[6], 16);
+                    if (j++ < len)
+                        str += " " + System.Convert.ToString(obj.Data[7], 16);
 
                 }
 
-                listBox_Info.Items.Add ( str );
-                listBox_Info.SelectedIndex = listBox_Info.Items.Count - 1;
+                RevListBox.Items.Add(str);
+                RevListBox.SelectedIndex = RevListBox.Items.Count - 1;
             }
-
-            Marshal.FreeHGlobal ( pt );
         }
 
-        private void button_StartCAN_Click ( object sender, EventArgs e )
+        unsafe private void timer_rec_Tick(object sender, EventArgs e)
         {
-            if ( m_bOpen == 0 )
-            {
+            UInt32 res = new UInt32();
+            res = DllAdapte.VCI_GetReceiveNum(m_devtype, m_devind, m_canind);
+            if (res == 0)
                 return;
-            }
+            //res = DllAdapte.VCI_Receive(m_devtype, m_devind, m_canind, ref m_recobj[0],50, 100);
+            
+            UInt32 con_maxlen = 50;
+            IntPtr pt = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(VCI_CAN_OBJ)) * (Int32)con_maxlen);
 
-            DllAdapte.VCI_StartCAN ( m_devtype, m_devind, m_canind );
+            res = DllAdapte.VCI_Receive(m_devtype, m_devind, m_canind, pt, con_maxlen, 100);
+
+            ReceiveDataHandle(res, pt);
+
+            Marshal.FreeHGlobal(pt);
         }
 
-        private void button_StopCAN_Click ( object sender, EventArgs e )
+        unsafe private void button_Send_Click(object sender, EventArgs e)
         {
-            if ( m_bOpen == 0 )
-            {
+            if (m_bOpen == 0)
                 return;
-            }
-
-            DllAdapte.VCI_ResetCAN ( m_devtype, m_devind, m_canind );
-        }
-
-        unsafe private void button_Send_Click ( object sender, EventArgs e )
-        {
-            if ( m_bOpen==0 )
-            {
-                return;
-            }
 
             VCI_CAN_OBJ sendobj = new VCI_CAN_OBJ();
             //sendobj.Init();
-            sendobj.SendType = ( byte ) comboBox_SendType.SelectedIndex;
-            sendobj.RemoteFlag = ( byte ) comboBox_FrameFormat.SelectedIndex;
-            sendobj.ExternFlag = ( byte ) comboBox_FrameType.SelectedIndex;
-            sendobj.ID = System.Convert.ToUInt32 ( "0x"+textBox_ID.Text, 16 );
-            int len = ( textBox_Data.Text.Length+1 ) / 3;
-            sendobj.DataLen =System.Convert.ToByte ( len );
+            sendobj.SendType = (byte)comboBox_SendType.SelectedIndex;
+            sendobj.RemoteFlag = (byte)comboBox_FrameFormat.SelectedIndex;
+            sendobj.ExternFlag = (byte)comboBox_FrameType.SelectedIndex;
+            sendobj.ID = System.Convert.ToUInt32("0x" + textBox_ID.Text, 16);
+            int len = (textBox_Data.Text.Length + 1) / 3;
+            sendobj.DataLen = System.Convert.ToByte(len);
             String strdata = textBox_Data.Text;
-            int i=-1;
+            int i = -1;
+            if (i++ < len - 1)
+                sendobj.Data[0] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
+            if (i++ < len - 1)
+                sendobj.Data[1] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
+            if (i++ < len - 1)
+                sendobj.Data[2] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
+            if (i++ < len - 1)
+                sendobj.Data[3] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
+            if (i++ < len - 1)
+                sendobj.Data[4] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
+            if (i++ < len - 1)
+                sendobj.Data[5] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
+            if (i++ < len - 1)
+                sendobj.Data[6] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
+            if (i++ < len - 1)
+                sendobj.Data[7] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
 
-            if ( i++<len-1 )
+            if (DllAdapte.VCI_Transmit(m_devtype, m_devind, m_canind, ref sendobj, 1) == 0)
             {
-                sendobj.Data[0]=System.Convert.ToByte ( "0x" +strdata.Substring ( i * 3, 2 ), 16 );
-            }
-
-            if ( i++ < len - 1 )
-            {
-                sendobj.Data[1]=System.Convert.ToByte ( "0x" +strdata.Substring ( i * 3, 2 ), 16 );
-            }
-
-            if ( i++ < len - 1 )
-            {
-                sendobj.Data[2]=System.Convert.ToByte ( "0x" +strdata.Substring ( i * 3, 2 ), 16 );
-            }
-
-            if ( i++ < len - 1 )
-            {
-                sendobj.Data[3]=System.Convert.ToByte ( "0x" +strdata.Substring ( i * 3, 2 ), 16 );
-            }
-
-            if ( i++ < len - 1 )
-            {
-                sendobj.Data[4]=System.Convert.ToByte ( "0x" +strdata.Substring ( i * 3, 2 ), 16 );
-            }
-
-            if ( i++ < len - 1 )
-            {
-                sendobj.Data[5]=System.Convert.ToByte ( "0x" +strdata.Substring ( i * 3, 2 ), 16 );
-            }
-
-            if ( i++ < len - 1 )
-            {
-                sendobj.Data[6]=System.Convert.ToByte ( "0x" +strdata.Substring ( i * 3, 2 ), 16 );
-            }
-
-            if ( i++ < len - 1 )
-            {
-                sendobj.Data[7] = System.Convert.ToByte ( "0x" + strdata.Substring ( i * 3, 2 ), 16 );
-            }
-
-            if ( DllAdapte.VCI_Transmit ( m_devtype, m_devind, m_canind, ref sendobj, 1 ) ==0 )
-            {
-                MessageBox.Show ( "发送失败", "错误",
-                                  MessageBoxButtons.OK, MessageBoxIcon.Exclamation );
+                MessageBox.Show("发送失败", "错误",
+                        MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
 
-        private void textBox_AccCode_TextChanged ( object sender, EventArgs e )
+        private void textBox_AccCode_TextChanged(object sender, EventArgs e)
         {
 
         }
 
+        private void InitCanByIndex(UInt32 canInd)
+        {
+            VCI_INIT_CONFIG config = new VCI_INIT_CONFIG();
 
+            if (canInd == 0)
+            {
+                config.Timing0 = System.Convert.ToByte(can0T0TextBox.Text, 16);
+                config.Timing1 = System.Convert.ToByte(can0T1TextBox.Text, 16);
+            }
+            else if (canInd == 1)
+            {
+                config.Timing0 = System.Convert.ToByte(can1T0TextBox.Text, 16);
+                config.Timing1 = System.Convert.ToByte(can1T1TextBox.Text, 16);
+            }
+
+            config.AccCode = System.Convert.ToUInt32("0x" + textBox_AccCode.Text, 16);
+            config.AccMask = System.Convert.ToUInt32("0x" + textBox_AccMask.Text, 16);
+            config.Filter = m_filter;   //(Byte)comboBox_Filter.SelectedIndex;
+            config.Mode = m_mode;   //(Byte)comboBox_Mode.SelectedIndex;
+
+            DllAdapte.VCI_InitCAN(m_devtype, m_devind, canInd, ref config);
+        }
+
+        private void InitCanByIndex()
+        {
+            VCI_INIT_CONFIG config = new VCI_INIT_CONFIG();
+
+            config.AccCode = System.Convert.ToUInt32("0x" + textBox_AccCode.Text, 16);
+            config.AccMask = System.Convert.ToUInt32("0x" + textBox_AccMask.Text, 16);
+            config.Filter = m_filter;   //(Byte)comboBox_Filter.SelectedIndex;
+            config.Mode = m_mode;   //(Byte)comboBox_Mode.SelectedIndex;
+
+            config.Timing0 = System.Convert.ToByte(can0T0TextBox.Text, 16);
+            config.Timing1 = System.Convert.ToByte(can0T1TextBox.Text, 16);
+            DllAdapte.VCI_InitCAN(m_devtype, m_devind, 0/*(UInt32)CanIndex.Can0*/, ref config);
+
+            config.Timing0 = System.Convert.ToByte(can1T0TextBox.Text, 16);
+            config.Timing1 = System.Convert.ToByte(can1T1TextBox.Text, 16);
+            DllAdapte.VCI_InitCAN(m_devtype, m_devind, 1/*(UInt32)CanIndex.Can1*/, ref config);
+        }
+
+        private void connectM_Click(object sender, EventArgs e)
+        {
+            if (m_bOpen == 1)
+            {
+                DllAdapte.VCI_CloseDevice(m_devtype, m_devind);
+                m_bOpen = 0;
+            }
+            else
+            {
+                //m_devtype = m_arrdevtype[comboBox_devtype.SelectedIndex];
+                //m_devind = (UInt32)comboBox_DevIndex.SelectedIndex;
+                //m_canind = (UInt32)comboBox_CANIndex.SelectedIndex;
+
+                uint ret = DllAdapte.VCI_OpenDevice(m_devtype, m_devind, 0);
+                if (ret <= 0)
+                {
+                    MessageBox.Show("打开设备失败,请检查设备类型和设备索引号是否正确", "错误",
+                            MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    return;
+                }
+                else
+                {
+                    AddListBoxItem("设备连接成功。");
+                }
+
+                m_bOpen = 1;
+
+                InitCanByIndex();
+            }
+            connectM.Text = m_bOpen == 1 ? "断开" : "连接";
+            timer_rec.Enabled = m_bOpen == 1 ? true : false;
+        }
+
+        private void startM_Click(object sender, EventArgs e)
+        {
+            if (m_bOpen == 0)
+                return;
+
+            uint ret = DllAdapte.VCI_StartCAN(m_devtype, m_devind, m_canind);
+            if (ret > 0)
+            {
+                RevListBox.Items.Add("启动成功。");
+            }
+            else
+            {
+                RevListBox.Items.Add("启动失败。");
+            }
+        }
+
+        private void resetM_Click(object sender, EventArgs e)
+        {
+            if (m_bOpen == 0)
+                return;
+
+            uint ret = DllAdapte.VCI_ResetCAN(m_devtype, m_devind, m_canind);
+            if (ret > 0)
+            {
+                RevListBox.Items.Add("复位成功。");
+            }
+            else
+            {
+                RevListBox.Items.Add("复位失败。");
+            }
+        }
+
+        private void label15_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label4_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void can0GrpBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            mCan0BRIndex = can0GrpBox.SelectedIndex;
+            FillTimerTextBox();
+        }
+
+        private void can1GrpBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            mCan1BRIndex = can1GrpBox.SelectedIndex;
+            FillTimerTextBox();
+        }
+
+        private void clearRevBtn_Click(object sender, EventArgs e)
+        {
+            RevListBox.Items.Clear();
+        }
+
+        private void clearSendBtn_Click(object sender, EventArgs e)
+        {
+            sendListBox.Items.Clear();
+        }
+
+        private void Can0Cb_CheckedChanged(object sender, EventArgs e)
+        {
+            if(Can0Cb.CheckState == CheckState.Checked)
+            {
+                mCan0SelectFlag = 1;
+            }
+            else
+            {
+                mCan0SelectFlag = 0;
+            }
+        }
+
+        private void Can1Cb_CheckedChanged(object sender, EventArgs e)
+        {
+            if (Can1Cb.CheckState == CheckState.Checked)
+            {
+                mCan1SelectFlag = 1;
+            }
+            else
+            {
+                mCan1SelectFlag = 0;
+            }
+        }
+
+        private void comboBox_CANIndex_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            m_canind = (UInt32)comboBox_CANIndex.SelectedIndex;
+        }
+
+        private void comboBox_DevIndex_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            m_devind = (UInt32)comboBox_DevIndex.SelectedIndex;
+        }
+
+        private void comboBox_devtype_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            m_devtype = m_arrdevtype[comboBox_devtype.SelectedIndex];
+        }
+
+        private void comboBox_Filter_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            m_filter = (Byte)comboBox_Filter.SelectedIndex;
+        }
+
+        private void comboBox_Mode_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            m_mode = (Byte)comboBox_Mode.SelectedIndex;
+        }
     }
 }

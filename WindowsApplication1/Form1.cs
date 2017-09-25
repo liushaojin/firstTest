@@ -172,12 +172,23 @@ namespace WindowsApplication1
         {
             this.StartPosition = FormStartPosition.CenterScreen;
             InitializeComponent();
+            richTextBox.AllowDrop = true;
+            richTextBox.DragEnter += new DragEventHandler(FormDragEnter/*RichBoxDragEnter*/);
+            richTextBox.DragDrop += new DragEventHandler(FormDragDrop/*RichBoxDragDrop*/);
             groupBox1.Paint += GroupPaint;
             groupBox3.Paint += GroupPaint;
             errorGrpBox.Paint += GroupPaint;//自定义groupbox边框的颜色
             this.tabControl.DrawMode = TabDrawMode.OwnerDrawFixed;
             this.tabControl.DrawItem += new DrawItemEventHandler(this.TabControl1DrawItem);//自定义tabcontrol的背景
         }
+
+        private void RichBoxDragEnter(object sender, DragEventArgs e)
+        {
+        }
+        private void RichBoxDragDrop(object sender, DragEventArgs e)
+        {
+        }
+
         private void TabControl1DrawItem(object sender, System.Windows.Forms.DrawItemEventArgs e)
         {
             StringFormat sf = new StringFormat();

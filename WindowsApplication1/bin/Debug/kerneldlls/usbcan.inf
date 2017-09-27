@@ -1,0 +1,59 @@
+[Version]
+Signature="$CHICAGO$"
+Class=USB
+provider=%PHILIPS%
+ClassGUID={36FC9E60-C465-11CF-8056-444553540000}
+DriverVer=06/01/2011,1.80.0000
+
+
+[Manufacturer]
+%MfgName%=iTEK,NTamd64
+
+[iTEK.NTamd64]
+%USB\VID_0471&PID_1200.DeviceDesc%=iTEKCAN.Dev, USB\VID_0471&PID_1200
+
+[SourceDisksNames]
+1 = %DiskId1%,,,""
+
+[SourceDisksFiles]
+usbcan.sys  = 1,,
+
+[PreCopySection]
+HKR,,NoSetupUI,,1
+
+[DestinationDirs]
+iTEKCAN.Files.Ext = 10,System32\Drivers
+
+[iTEKCAN.Dev.NTamd64]
+CopyFiles=iTEKCAN.Files.Ext
+AddReg=iTEKCAN.AddReg
+
+[iTEKCAN.Dev.NTamd64.Services]
+Addservice = iTEKCAN, 0x00000002, iTEKCAN.AddService
+
+[iTEKCAN.AddService]
+DisplayName    = %iTEKCAN.SvcDesc%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 2                  ; SERVICE_AUTO_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %10%\System32\Drivers\usbcan.sys
+LoadOrderGroup = Base
+
+[iTEKCAN.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,usbcan.sys
+
+
+[iTEKCAN.Files.Ext]
+usbcan.sys
+
+
+;---------------------------------------------------------------;
+
+[Strings]
+iTEK="iTEK Technology Co., LTD"
+MfgName="iTEK"
+USB\VID_0471&PID_1200.DeviceDesc="iTEK USBCAN"
+iTEKCAN.SvcDesc="usbcan.sys iTEK USBCAN"
+PHILIPS = "iTEK Technology Co., LTD"
+DiskId1 = "USBCAN Driver Disc"

@@ -31,6 +31,7 @@ namespace WindowsApplication1
         {
             this.components = new System.ComponentModel.Container();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.pauseRevBtn = new System.Windows.Forms.Button();
             this.clearRevBtn = new System.Windows.Forms.Button();
             this.Can1Cb = new System.Windows.Forms.CheckBox();
             this.RevListBox = new System.Windows.Forms.ListBox();
@@ -104,7 +105,7 @@ namespace WindowsApplication1
             this.errorlistV = new System.Windows.Forms.ListView();
             this.errorGrpBox = new System.Windows.Forms.GroupBox();
             this.richTextBox = new System.Windows.Forms.RichTextBox();
-            this.pauseRevBtn = new System.Windows.Forms.Button();
+            this.timerSend = new System.Windows.Forms.Timer(this.components);
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.tabControl.SuspendLayout();
@@ -150,6 +151,17 @@ namespace WindowsApplication1
             this.groupBox1.TabIndex = 4;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "设备参数";
+            // 
+            // pauseRevBtn
+            // 
+            this.pauseRevBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.pauseRevBtn.Location = new System.Drawing.Point(446, 326);
+            this.pauseRevBtn.Name = "pauseRevBtn";
+            this.pauseRevBtn.Size = new System.Drawing.Size(75, 23);
+            this.pauseRevBtn.TabIndex = 25;
+            this.pauseRevBtn.Text = "暂停";
+            this.pauseRevBtn.UseVisualStyleBackColor = true;
+            this.pauseRevBtn.Click += new System.EventHandler(this.stopRevBtn_Click);
             // 
             // clearRevBtn
             // 
@@ -562,7 +574,7 @@ namespace WindowsApplication1
             // bmsUp
             // 
             this.bmsUp.Name = "bmsUp";
-            this.bmsUp.Size = new System.Drawing.Size(152, 22);
+            this.bmsUp.Size = new System.Drawing.Size(143, 22);
             this.bmsUp.Text = "BMS主机(&B)";
             this.bmsUp.Click += new System.EventHandler(this.bmsUp_Click);
             // 
@@ -860,16 +872,9 @@ namespace WindowsApplication1
             this.richTextBox.TabIndex = 13;
             this.richTextBox.Text = "";
             // 
-            // pauseRevBtn
+            // timerSend
             // 
-            this.pauseRevBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.pauseRevBtn.Location = new System.Drawing.Point(446, 326);
-            this.pauseRevBtn.Name = "pauseRevBtn";
-            this.pauseRevBtn.Size = new System.Drawing.Size(75, 23);
-            this.pauseRevBtn.TabIndex = 25;
-            this.pauseRevBtn.Text = "暂停";
-            this.pauseRevBtn.UseVisualStyleBackColor = true;
-            this.pauseRevBtn.Click += new System.EventHandler(this.stopRevBtn_Click);
+            this.timerSend.Tick += new System.EventHandler(this.timerSend_Tick);
             // 
             // Form1
             // 
@@ -983,6 +988,7 @@ namespace WindowsApplication1
         private System.Windows.Forms.ListBox sendListBox;
         private System.Windows.Forms.RichTextBox richTextBox;
         private System.Windows.Forms.Button pauseRevBtn;
+        private System.Windows.Forms.Timer timerSend;
     }
 }
 

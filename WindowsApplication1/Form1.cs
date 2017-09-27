@@ -127,10 +127,11 @@ public struct CanBautRate
 
 public enum UpgradeCmd
 {
-    CmdPing = 0x41,
-    CmdRun = 0x42,
-    CmdUpgrade = 0x43,
-    CmdSendData = 0x44,
+    CmdJump = 0x40, //从app跳转到bootloader的指令
+    CmdPing = 0x41, //同bootloader连接的ping指令
+    CmdRun = 0x42,  //从bootloader跳转到app的指令
+    CmdUpgrade = 0x43,  //发送升级(地址)的指令
+    CmdSendData = 0x44, //发送升级数据的指令
 }
 
 namespace WindowsApplication1
@@ -162,6 +163,7 @@ namespace WindowsApplication1
         int mCan1BRIndex = 0;
         int mPauseFlag = 0; //暂停标志
         int mUpgradeFlag = 0;//升级标志
+        UpgradeCmd mUpCmd = UpgradeCmd.CmdJump;
         string mFilePath = string.Empty;    //拖放文件的绝对路径
 
         static UInt32 m_devtype = 4;//USBCAN2
@@ -208,11 +210,11 @@ namespace WindowsApplication1
             Rectangle mTabCtlRec = tabControl.ClientRectangle;
             e.Graphics.FillRectangle(Brushes.Gray, 0, 0, mTabCtlRec.Width, mTabCtlRec.Height);
 
-            for (int i = 0; i < tabControl.TabPages.Count; i++)
+            for(int i = 0; i < tabControl.TabPages.Count; i++)
             {
                 Rectangle rect = tabControl.GetTabRect(i);
 
-                if (i == tabControl.SelectedIndex)
+                if(i == tabControl.SelectedIndex)
                 {
                     e.Graphics.FillRectangle(Brushes.DarkGray, rect);
                 }
@@ -232,7 +234,7 @@ namespace WindowsApplication1
             Brush bshBack;
             Brush bshFore;
 
-            if (e.Index == this.tabControl.SelectedIndex)
+            if(e.Index == this.tabControl.SelectedIndex)
             {
                 fntTab = new Font(e.Font, FontStyle.Bold);
                 bshBack = new System.Drawing.Drawing2D.LinearGradientBrush(e.Bounds, SystemColors.Control, SystemColors.Control, System.Drawing.Drawing2D.LinearGradientMode.BackwardDiagonal);
@@ -268,7 +270,7 @@ namespace WindowsApplication1
         //拖文件到窗体上触发DragEnter事件
         private void FormDragEnter(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            if(e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 e.Effect = DragDropEffects.Link;
             }
@@ -295,10 +297,10 @@ namespace WindowsApplication1
             textBox_AccMask.Text = "FFFFFFFF";
             comboBox_Filter.SelectedIndex = 1;
             comboBox_Mode.SelectedIndex = 0;
-            comboBox_SendType.SelectedIndex = 2;
+            comboBox_SendType.SelectedIndex = 0;
             comboBox_FrameFormat.SelectedIndex = 0;
-            comboBox_FrameType.SelectedIndex = 0;
-            textBox_ID.Text = "00000123";
+            comboBox_FrameType.SelectedIndex = 1;
+            textBox_ID.Text = "1440aaab";
             textBox_Data.Text = "00 01 02 03 04 05 06 07 ";
             Int32 curindex = 0;
             comboBox_devtype.Items.Clear();
@@ -316,7 +318,7 @@ namespace WindowsApplication1
         //主窗口关闭处理函数
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            if (m_bOpen == 1)
+            if(m_bOpen == 1)
             {
                 DllAdapte.VCI_CloseDevice(m_devtype, m_devind);
             }
@@ -329,7 +331,7 @@ namespace WindowsApplication1
             CanBautRate temp;
 
             //初始化波特率列表项
-            if (canBautRateList.Count <= 0)
+            if(canBautRateList.Count <= 0)
             {
                 temp.timer0Str = "0x03";
                 temp.timer1Str = "0x1C";
@@ -346,7 +348,7 @@ namespace WindowsApplication1
             }
 
             //添加波特率列表项
-            foreach (CanBautRate tem in canBautRateList)
+            foreach(CanBautRate tem in canBautRateList)
             {
                 can0GrpBox.Items.Add(tem.bautRateStr);
                 can1GrpBox.Items.Add(tem.bautRateStr);
@@ -377,14 +379,14 @@ namespace WindowsApplication1
         {
             bool isNeedScroll = false;  //是否需要滚动标志
 
-            if (this.RevListBox.TopIndex == this.RevListBox.Items.Count - (int)(this.RevListBox.Height / this.RevListBox.ItemHeight))
+            if(this.RevListBox.TopIndex == this.RevListBox.Items.Count - (int)(this.RevListBox.Height / this.RevListBox.ItemHeight))
             {
                 isNeedScroll = true;
             }
 
             this.RevListBox.Items.Add(str);
 
-            if (isNeedScroll)
+            if(isNeedScroll)
             {
                 this.RevListBox.TopIndex = this.RevListBox.Items.Count - (int)(this.RevListBox.Height / this.RevListBox.ItemHeight);
             }
@@ -396,7 +398,7 @@ namespace WindowsApplication1
             UInt32 res = new UInt32();
             res = DllAdapte.VCI_GetReceiveNum(m_devtype, m_devind, canId);
 
-            if (res == 0)
+            if(res == 0)
             {
                 return;
             }
@@ -406,14 +408,14 @@ namespace WindowsApplication1
             IntPtr pt = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(VCI_CAN_OBJ)) * (Int32)con_maxlen);
             res = DllAdapte.VCI_Receive(m_devtype, m_devind, canId, pt, con_maxlen, 100);
 
-            for (UInt32 i = 0; i < res; i++)
+            for(UInt32 i = 0; i < res; i++)
             {
                 VCI_CAN_OBJ obj = (VCI_CAN_OBJ)Marshal.PtrToStructure((IntPtr)((UInt32)pt + i * Marshal.SizeOf(typeof(VCI_CAN_OBJ))), typeof(VCI_CAN_OBJ));
-                str = "接收到数据: ";
+                //str = "接收到数据: ";
                 str += "  帧ID:0x" + System.Convert.ToString((Int32)obj.ID, 16);
                 str += "  帧格式:";
 
-                if (obj.RemoteFlag == 0)
+                if(obj.RemoteFlag == 0)
                 {
                     str += "数据帧 ";
                 }
@@ -422,7 +424,7 @@ namespace WindowsApplication1
                     str += "远程帧 ";
                 }
 
-                if (obj.ExternFlag == 0)
+                if(obj.ExternFlag == 0)
                 {
                     str += "标准帧 ";
                 }
@@ -431,54 +433,54 @@ namespace WindowsApplication1
                     str += "扩展帧 ";
                 }
 
-                if (obj.RemoteFlag == 0)
+                if(obj.RemoteFlag == 0)
                 {
                     str += "数据: ";
                     byte len = (byte)(obj.DataLen % 9);
                     byte j = 0;
 
-                    if (j++ < len)
+                    if(j++ < len)
                     {
                         str += " " + System.Convert.ToString(obj.Data[0], 16);
                     }
 
-                    if (j++ < len)
+                    if(j++ < len)
                     {
                         str += " " + System.Convert.ToString(obj.Data[1], 16);
                     }
 
-                    if (j++ < len)
+                    if(j++ < len)
                     {
                         str += " " + System.Convert.ToString(obj.Data[2], 16);
                     }
 
-                    if (j++ < len)
+                    if(j++ < len)
                     {
                         str += " " + System.Convert.ToString(obj.Data[3], 16);
                     }
 
-                    if (j++ < len)
+                    if(j++ < len)
                     {
                         str += " " + System.Convert.ToString(obj.Data[4], 16);
                     }
 
-                    if (j++ < len)
+                    if(j++ < len)
                     {
                         str += " " + System.Convert.ToString(obj.Data[5], 16);
                     }
 
-                    if (j++ < len)
+                    if(j++ < len)
                     {
                         str += " " + System.Convert.ToString(obj.Data[6], 16);
                     }
 
-                    if (j++ < len)
+                    if(j++ < len)
                     {
                         str += " " + System.Convert.ToString(obj.Data[7], 16);
                     }
                 }
 
-                if (mPauseFlag == 0)
+                if(mPauseFlag == 0)
                 {
                     RevListBox.Items.Add(str);
                     RevListBox.SelectedIndex = RevListBox.Items.Count - 1;
@@ -490,35 +492,33 @@ namespace WindowsApplication1
 
         unsafe private void timer_rec_Tick(object sender, EventArgs e)
         {
-            if (mUpgradeFlag == 0)
+            if(mUpgradeFlag == 0)
             {
-                if (m_canind == 0)
+                if(m_canind == 0)
                 {
                     ReceiveDataHandle((UInt32)CanIndex.Can0);   //显示can0通道接收的数据
                 }
-                else if (m_canind == 1)
-                {
-                    ReceiveDataHandle((UInt32)CanIndex.Can1);   //显示can1通道接收的数据
-                }
                 else
-                {
-                    ReceiveDataHandle((UInt32)CanIndex.Can0);
-                    ReceiveDataHandle((UInt32)CanIndex.Can1);   //显示can0、can1通道接收的数据
-                }
+                    if(m_canind == 1)
+                    {
+                        ReceiveDataHandle((UInt32)CanIndex.Can1);   //显示can1通道接收的数据
+                    }
+                    else
+                    {
+                        ReceiveDataHandle((UInt32)CanIndex.Can0);
+                        ReceiveDataHandle((UInt32)CanIndex.Can1);   //显示can0、can1通道接收的数据
+                    }
             }
             else
             {
                 ReceiveUpData();
-                string id = "1840AAAB";
-                string data = string.Empty;
-                SendUpData(id, data);
             }
         }
 
         //发送按钮点击事件处理函数
         unsafe private void button_Send_Click(object sender, EventArgs e)
         {
-            if (m_bOpen == 0)
+            if(m_bOpen == 0)
             {
                 return;
             }
@@ -532,49 +532,59 @@ namespace WindowsApplication1
             int len = (textBox_Data.Text.Length + 1) / 3;
             sendobj.DataLen = System.Convert.ToByte(len);
             String strdata = textBox_Data.Text;
-            int i = -1;
 
-            if (i++ < len - 1)
+            for(int i = 0; i < (len - 1); i++)
             {
-                sendobj.Data[0] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
+                if(i >= 8)
+                {
+                    break;
+                }
+
+                sendobj.Data[i] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
             }
 
-            if (i++ < len - 1)
-            {
-                sendobj.Data[1] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
-            }
+            //             int i = -1;
+            //             if(i++ < len - 1)
+            //             {
+            //                 sendobj.Data[0] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
+            //             }
+            //
+            //             if(i++ < len - 1)
+            //             {
+            //                 sendobj.Data[1] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
+            //             }
+            //
+            //             if(i++ < len - 1)
+            //             {
+            //                 sendobj.Data[2] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
+            //             }
+            //
+            //             if(i++ < len - 1)
+            //             {
+            //                 sendobj.Data[3] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
+            //             }
+            //
+            //             if(i++ < len - 1)
+            //             {
+            //                 sendobj.Data[4] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
+            //             }
+            //
+            //             if(i++ < len - 1)
+            //             {
+            //                 sendobj.Data[5] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
+            //             }
+            //
+            //             if(i++ < len - 1)
+            //             {
+            //                 sendobj.Data[6] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
+            //             }
+            //
+            //             if(i++ < len - 1)
+            //             {
+            //                 sendobj.Data[7] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
+            //             }
 
-            if (i++ < len - 1)
-            {
-                sendobj.Data[2] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
-            }
-
-            if (i++ < len - 1)
-            {
-                sendobj.Data[3] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
-            }
-
-            if (i++ < len - 1)
-            {
-                sendobj.Data[4] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
-            }
-
-            if (i++ < len - 1)
-            {
-                sendobj.Data[5] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
-            }
-
-            if (i++ < len - 1)
-            {
-                sendobj.Data[6] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
-            }
-
-            if (i++ < len - 1)
-            {
-                sendobj.Data[7] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
-            }
-
-            if (DllAdapte.VCI_Transmit(m_devtype, m_devind, m_canind, ref sendobj, 1) == 0)
+            if(DllAdapte.VCI_Transmit(m_devtype, m_devind, m_canind, ref sendobj, 1) == 0)
             {
                 MessageBox.Show("发送失败", "错误",
                                 MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
@@ -590,16 +600,17 @@ namespace WindowsApplication1
         {
             VCI_INIT_CONFIG config = new VCI_INIT_CONFIG();
 
-            if (canInd == 0)
+            if(canInd == 0)
             {
                 config.Timing0 = System.Convert.ToByte(can0T0TextBox.Text, 16);
                 config.Timing1 = System.Convert.ToByte(can0T1TextBox.Text, 16);
             }
-            else if (canInd == 1)
-            {
-                config.Timing0 = System.Convert.ToByte(can1T0TextBox.Text, 16);
-                config.Timing1 = System.Convert.ToByte(can1T1TextBox.Text, 16);
-            }
+            else
+                if(canInd == 1)
+                {
+                    config.Timing0 = System.Convert.ToByte(can1T0TextBox.Text, 16);
+                    config.Timing1 = System.Convert.ToByte(can1T1TextBox.Text, 16);
+                }
 
             config.AccCode = System.Convert.ToUInt32("0x" + textBox_AccCode.Text, 16);
             config.AccMask = System.Convert.ToUInt32("0x" + textBox_AccMask.Text, 16);
@@ -626,8 +637,9 @@ namespace WindowsApplication1
 
         private void connectM_Click(object sender, EventArgs e)
         {
-            if (m_bOpen == 1)
+            if(m_bOpen == 1)
             {
+                timerSend.Enabled = false;
                 DllAdapte.VCI_CloseDevice(m_devtype, m_devind);
                 m_bOpen = 0;
             }
@@ -638,7 +650,7 @@ namespace WindowsApplication1
                 //m_canind = (UInt32)comboBox_CANIndex.SelectedIndex;
                 uint ret = DllAdapte.VCI_OpenDevice(m_devtype, m_devind, 0);
 
-                if (ret <= 0)
+                if(ret <= 0)
                 {
                     MessageBox.Show("打开设备失败,请检查设备类型和设备索引号是否正确", "错误",
                                     MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
@@ -655,6 +667,7 @@ namespace WindowsApplication1
 
             connectM.Text = m_bOpen == 1 ? "断开" : "连接";
             timer_rec.Enabled = m_bOpen == 1 ? true : false;
+
         }
 
         //can启动逻辑
@@ -664,7 +677,7 @@ namespace WindowsApplication1
             //启动Can0通道
             uint ret = DllAdapte.VCI_StartCAN(m_devtype, m_devind, canId);
 
-            if (ret > 0)
+            if(ret > 0)
             {
                 state = "成功";
             }
@@ -679,7 +692,7 @@ namespace WindowsApplication1
 
         private void startM_Click(object sender, EventArgs e)
         {
-            if (m_bOpen == 0)
+            if(m_bOpen == 0)
             {
                 return;
             }
@@ -691,11 +704,12 @@ namespace WindowsApplication1
         //can复位逻辑
         private void CanReset(UInt32 canId)
         {
+            timerSend.Enabled = false;
             string state = string.Empty;
-            //启动Can0通道
+            //复位Can0通道
             uint ret = DllAdapte.VCI_ResetCAN(m_devtype, m_devind, canId);
 
-            if (ret > 0)
+            if(ret > 0)
             {
                 state = "成功";
             }
@@ -710,7 +724,7 @@ namespace WindowsApplication1
 
         private void resetM_Click(object sender, EventArgs e)
         {
-            if (m_bOpen == 0)
+            if(m_bOpen == 0)
             {
                 return;
             }
@@ -751,7 +765,7 @@ namespace WindowsApplication1
 
         private void Can0Cb_CheckedChanged(object sender, EventArgs e)
         {
-            if (Can0Cb.CheckState == CheckState.Checked)
+            if(Can0Cb.CheckState == CheckState.Checked)
             {
                 mCan0SelectFlag = 1;
             }
@@ -763,7 +777,7 @@ namespace WindowsApplication1
 
         private void Can1Cb_CheckedChanged(object sender, EventArgs e)
         {
-            if (Can1Cb.CheckState == CheckState.Checked)
+            if(Can1Cb.CheckState == CheckState.Checked)
             {
                 mCan1SelectFlag = 1;
             }
@@ -801,7 +815,7 @@ namespace WindowsApplication1
 
         private void stopRevBtn_Click(object sender, EventArgs e)
         {
-            if (mPauseFlag == 0)
+            if(mPauseFlag == 0)
             {
                 mPauseFlag = 1;
                 pauseRevBtn.Text = "继续";
@@ -815,50 +829,38 @@ namespace WindowsApplication1
 
         private void bmsUp_Click(object sender, EventArgs e)
         {
-            mUpgradeFlag = 1;
+
             string fileType = string.Empty;
+            DllAdapte.VCI_ClearBuffer(m_devtype, m_devind, 0);
+
             //检查升级文件路径是否为空
-            if (string.IsNullOrEmpty(mFilePath))
+            if(string.IsNullOrEmpty(mFilePath))
             {
                 MessageBox.Show("请先选择升级文件！", "提示",
-                                    MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                                MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
             }
+
             //判断升级文件是否是bin文件
             fileType = Path.GetExtension(mFilePath);
-            if (!fileType.Equals(".bin"))
+
+            if(!fileType.Equals(".bin")) //if (fileType.Contains("bin"))
             {
                 MessageBox.Show("升级文件类型不是xxx.bin,请选择bin文件！", "提示",
-                                    MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                                MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
             }
-            //if (fileType.Contains("bin"))
-            //{
-            //    MessageBox.Show("升级文件类型是xxx.bin,请选择bin文件！", "提示",
-            //                        MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-            //}
-
-            //先发送ping命令 ID:0x1841AAAB
-            //             string id = "1840AAAB";
-            //             string data = string.Empty;
-            //             SendUpData(id, data);
-
-            //再发送升级下载命令
-
-            //再发送升级命令
-
-            //再发送运行命令
 
 
-            //发送升级文件
-            FileStream stream = new FileStream(mFilePath, FileMode.Open, FileAccess.Read);
-            BinaryReader reader = new BinaryReader(stream);//二进制读写器 
-            //StreamReader binStream = new StreamReader(stream);//文本读写器
-
+            mUpgradeFlag = 1;//升级标志置1
+            timerSend.Enabled = m_bOpen == 1 ? true : false;//使能发送定时器
 
         }
 
         //发送升级数据
         unsafe private void SendUpData(string id, string data)
         {
+            uint canId = 0;
             VCI_CAN_OBJ sendobj = new VCI_CAN_OBJ();
             //sendobj.Init();
             sendobj.SendType = (byte)comboBox_SendType.SelectedIndex;
@@ -868,51 +870,23 @@ namespace WindowsApplication1
             int len = (data.Length + 1) / 3;
             sendobj.DataLen = System.Convert.ToByte(len);
             String strdata = data;
-            int i = -1;
 
-            if (i++ < len - 1)
-            {
-                sendobj.Data[0] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
-            }
+            Byte dat = (Byte)0;
 
-            if (i++ < len - 1)
+            for(int i=0; i<(len-1); i++)
             {
-                sendobj.Data[1] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
-            }
+                if(i >= 8)
+                {
+                    break;
+                }
 
-            if (i++ < len - 1)
-            {
-                sendobj.Data[2] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
-            }
-
-            if (i++ < len - 1)
-            {
-                sendobj.Data[3] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
-            }
-
-            if (i++ < len - 1)
-            {
-                sendobj.Data[4] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
-            }
-
-            if (i++ < len - 1)
-            {
-                sendobj.Data[5] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
-            }
-
-            if (i++ < len - 1)
-            {
-                sendobj.Data[6] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
-            }
-
-            if (i++ < len - 1)
-            {
-                sendobj.Data[7] = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
+                dat = System.Convert.ToByte("0x" + strdata.Substring(i * 3, 2), 16);
+                sendobj.Data[i] = dat;
             }
 
             sendListBox.Items.Add("0x" + id);
 
-            if (DllAdapte.VCI_Transmit(m_devtype, m_devind, m_canind, ref sendobj, 1) == 0)
+            if(DllAdapte.VCI_Transmit(m_devtype, m_devind, canId, ref sendobj, 1) != 1)
             {
                 MessageBox.Show("发送失败", "错误",
                                 MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
@@ -927,7 +901,7 @@ namespace WindowsApplication1
 
             res = DllAdapte.VCI_GetReceiveNum(m_devtype, m_devind, canId);
 
-            if (res == 0)
+            if(res == 0)
             {
                 return;
             }
@@ -937,71 +911,131 @@ namespace WindowsApplication1
             IntPtr pt = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(VCI_CAN_OBJ)) * (Int32)con_maxlen);
             res = DllAdapte.VCI_Receive(m_devtype, m_devind, canId, pt, con_maxlen, 100);
 
-            for (UInt32 i = 0; i < res; i++)
+            for(UInt32 i = 0; i < res; i++)
             {
                 VCI_CAN_OBJ obj = (VCI_CAN_OBJ)Marshal.PtrToStructure((IntPtr)((UInt32)pt + i * Marshal.SizeOf(typeof(VCI_CAN_OBJ))), typeof(VCI_CAN_OBJ));
-                str = System.Convert.ToString((Int32)obj.ID, 16);
-                //                 if(str.Contains("41abaa") && mPauseFlag == 0)
-                //                 {
-                RevListBox.Items.Add("0x" + str);
-                RevListBox.SelectedIndex = RevListBox.Items.Count - 1;
-                //                 }
+                str = "报文ID: ";
+                str += System.Convert.ToString((Int32)obj.ID, 16);
 
-                //                 if (obj.RemoteFlag == 0)
-                //                 {
-                //                     str += "数据: ";
-                //                     byte len = (byte)(obj.DataLen % 9);
-                //                     byte j = 0;
-                // 
-                //                     if (j++ < len)
-                //                     {
-                //                         str += " " + System.Convert.ToString(obj.Data[0], 16);
-                //                     }
-                // 
-                //                     if (j++ < len)
-                //                     {
-                //                         str += " " + System.Convert.ToString(obj.Data[1], 16);
-                //                     }
-                // 
-                //                     if (j++ < len)
-                //                     {
-                //                         str += " " + System.Convert.ToString(obj.Data[2], 16);
-                //                     }
-                // 
-                //                     if (j++ < len)
-                //                     {
-                //                         str += " " + System.Convert.ToString(obj.Data[3], 16);
-                //                     }
-                // 
-                //                     if (j++ < len)
-                //                     {
-                //                         str += " " + System.Convert.ToString(obj.Data[4], 16);
-                //                     }
-                // 
-                //                     if (j++ < len)
-                //                     {
-                //                         str += " " + System.Convert.ToString(obj.Data[5], 16);
-                //                     }
-                // 
-                //                     if (j++ < len)
-                //                     {
-                //                         str += " " + System.Convert.ToString(obj.Data[6], 16);
-                //                     }
-                // 
-                //                     if (j++ < len)
-                //                     {
-                //                         str += " " + System.Convert.ToString(obj.Data[7], 16);
-                //                     }
-                //                 }
-                // 
-                //                 if (mPauseFlag == 0)
-                //                 {
-                //                     RevListBox.Items.Add(str);
-                //                     RevListBox.SelectedIndex = RevListBox.Items.Count - 1;
-                //                 }
+                if(str.Contains("1441abaa"))    // && mPauseFlag == 0
+                {
+                    if(obj.Data[1] == (byte)0xcc)
+                    {
+                        mUpCmd = UpgradeCmd.CmdUpgrade;
+                    }
+                }
+
+                if(str.Contains("1443abaa"))     // && mPauseFlag == 0
+                {
+                    if(obj.Data[1] == (byte)0xcc)
+                    {
+                        mUpCmd = UpgradeCmd.CmdSendData;
+                    }
+                }
+
+                if(str.Contains("1444abaa"))     // && mPauseFlag == 0
+                {
+                    if(obj.Data[1] == (byte)0x33)
+                    {
+                        mUpCmd = UpgradeCmd.CmdRun;
+                    }
+                }
+
+                if(obj.RemoteFlag == 0)
+                {
+                    str += " 数据: ";
+                    byte len = (byte)(obj.DataLen % 9);
+
+                    for(byte j=0; j<len; j++)
+                    {
+                        str += " " + System.Convert.ToString(obj.Data[j], 16);
+                    }
+                }
+
+                if(mPauseFlag == 0)
+                {
+                    RevListBox.Items.Add(str);
+                    RevListBox.SelectedIndex = RevListBox.Items.Count - 1;
+                }
             }
 
             Marshal.FreeHGlobal(pt);
+        }
+
+        private int jumpTime = 0;
+        private void timerSend_Tick(object sender, EventArgs e)
+        {
+            string id = string.Empty;
+            string data = string.Empty;
+
+            switch(mUpCmd)
+            {
+                case UpgradeCmd.CmdJump://先app下载发送命令 ID:0x0040AAAB
+                    id = "1440aaab";
+                    data = "00 cc cc cc cc cc cc cc";
+                    SendUpData(id, data);
+
+                    if(jumpTime++ >= 10)
+                    {
+                        jumpTime = 0;
+                        mUpCmd = UpgradeCmd.CmdPing;
+                    }
+
+                    break;
+
+                case UpgradeCmd.CmdPing://先发送ping命令 ID:0x1841AAAB
+                    id = "1441aaab";
+                    data = "ff ff ff ff 4b b4 5a a5";
+                    SendUpData(id, data);
+                    break;
+
+                case UpgradeCmd.CmdRun://再发送运行命令
+                    id = "1442aaab";
+                    data = "ff 01 ff 01 3c 00 00 00";
+                    SendUpData(id, data);
+                    break;
+
+                case UpgradeCmd.CmdUpgrade://再发送升级命令
+                    id = "1443aaab";
+                    data = "00 40 00 00 af 9b 01 00";
+                    SendUpData(id, data);
+                    break;
+
+                case UpgradeCmd.CmdSendData://发送升级文件
+                    id = "1444aaab";
+
+                    try
+                    {
+                        FileStream stream = new FileStream(mFilePath, FileMode.Open, FileAccess.Read);
+                        BinaryReader reader = new BinaryReader(stream);//二进制读写器
+                        byte[] byteDat = reader.ReadBytes(8);
+
+                        for(int i=0; i < 8; i++)
+                        {
+                            if(i < 7)
+                            {
+                                data += byteDat[i].ToString("X2") + " ";
+                            }
+                            else
+                            {
+                                data += byteDat[i].ToString("X2"); //System.Convert.ToString(obj.Data[j], 16)
+                            }
+                        }
+                    }
+                    catch(Exception ex)
+                    {
+                        MessageBox.Show("升级文件流有误！", "错误",
+                                        MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    }
+
+                    SendUpData(id, data);
+                    break;
+
+                default:
+
+                    break;
+            }
+
         }
     }
 }

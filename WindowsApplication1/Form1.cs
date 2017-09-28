@@ -868,10 +868,10 @@ namespace WindowsApplication1
             FileInfo fileInfo = new FileInfo(mFilePath);
             mFileSize = (UInt32)fileInfo.Length;
 
-            if(mFileSize % 8 > 0)
-            {
-                mFileSize += (8 - mFileSize % 8);
-            }
+//             if(mFileSize % 8 > 0)
+//             {
+//                 mFileSize += (8 - mFileSize % 8);
+//             }
 
             //mFileSize += 7;
 
@@ -1009,7 +1009,14 @@ namespace WindowsApplication1
 
                     for(byte j=0; j<len; j++)
                     {
-                        dataStr += " " + obj.Data[j].ToString("X2"); //System.Convert.ToString(obj.Data[j], 16);
+                        if(j==0)
+                        {
+                            dataStr += obj.Data[j].ToString("X2");
+                        }
+                        else
+                        {
+                            dataStr += " " + obj.Data[j].ToString("X2"); //System.Convert.ToString(obj.Data[j], 16);
+                        }
                     }
                 }
 
@@ -1018,6 +1025,7 @@ namespace WindowsApplication1
                     RevListBox.Items.Add("报文ID: 0x" + idStr + "  接收数据: " + dataStr);
                     RevListBox.SelectedIndex = RevListBox.Items.Count - 1;
                 }
+
                 dataStr = string.Empty;
             }
 

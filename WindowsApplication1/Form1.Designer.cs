@@ -106,6 +106,7 @@ namespace WindowsApplication1
             this.errorGrpBox = new System.Windows.Forms.GroupBox();
             this.richTextBox = new System.Windows.Forms.RichTextBox();
             this.timerSend = new System.Windows.Forms.Timer(this.components);
+            this.progressBar = new System.Windows.Forms.ProgressBar();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.tabControl.SuspendLayout();
@@ -874,7 +875,17 @@ namespace WindowsApplication1
             // 
             // timerSend
             // 
+            this.timerSend.Interval = 10;
             this.timerSend.Tick += new System.EventHandler(this.timerSend_Tick);
+            // 
+            // progressBar
+            // 
+            this.progressBar.Location = new System.Drawing.Point(0, 697);
+            this.progressBar.Maximum = 1000;
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(1008, 33);
+            this.progressBar.Step = 1;
+            this.progressBar.TabIndex = 15;
             // 
             // Form1
             // 
@@ -883,6 +894,7 @@ namespace WindowsApplication1
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Gray;
             this.ClientSize = new System.Drawing.Size(1008, 730);
+            this.Controls.Add(this.progressBar);
             this.Controls.Add(this.errorGrpBox);
             this.Controls.Add(this.richTextBox);
             this.Controls.Add(this.groupBox3);
@@ -989,6 +1001,7 @@ namespace WindowsApplication1
         private System.Windows.Forms.RichTextBox richTextBox;
         private System.Windows.Forms.Button pauseRevBtn;
         private System.Windows.Forms.Timer timerSend;
+        private System.Windows.Forms.ProgressBar progressBar;
     }
 }
 

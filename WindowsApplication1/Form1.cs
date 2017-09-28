@@ -291,6 +291,7 @@ namespace WindowsApplication1
         //主窗口加载处理函数
         private void Form1_Load(object sender, EventArgs e)
         {
+            progressBar.Visible = false;//隐藏进度条控件，需要时再调用
             comboBox_DevIndex.SelectedIndex = 0;
             comboBox_CANIndex.SelectedIndex = 0;
             textBox_AccCode.Text = "00000000";
@@ -889,12 +890,13 @@ namespace WindowsApplication1
                 sendobj.Data[i] = dat;
             }
 
-            sendListBox.Items.Add("0x" + id);
+            sendListBox.Items.Add("报文ID: 0x" + id + "  发送数据：" + data);
 
             if(DllAdapte.VCI_Transmit(m_devtype, m_devind, canId, ref sendobj, 1) != 1)
             {
-                MessageBox.Show("发送失败", "错误",
-                                MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                sendListBox.Items.Add("发送失败");
+                //                 MessageBox.Show("发送失败", "错误",
+                //                                 MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
 
@@ -944,20 +946,24 @@ namespace WindowsApplication1
                 {
                     if(obj.Data[1] == (byte)0x33)
                     {
+                        progressBar.Visible = false;
                         mUpCmd = UpgradeCmd.CmdRun;
                         sendListBox.Items.Add("升级成功!");
+                        reader.Close();
+                        stream.Close();
                     }
                     else if(mSendDone == 1)
                     {
+                        progressBar.Visible = false;
                         mSendDone = 0;  //标志复位
-                        mUpCmd = UpgradeCmd.CmdRun;
+                        //mUpCmd = UpgradeCmd.CmdRun;
                         sendListBox.Items.Add("数据发送完成但未收到主机应答信号!");
                     }
                 }
 
                 if(obj.RemoteFlag == 0)
                 {
-                    str += " 数据: ";
+                    str += "  接收数据: ";
                     byte len = (byte)(obj.DataLen % 9);
 
                     for(byte j=0; j<len; j++)
@@ -1023,7 +1029,7 @@ namespace WindowsApplication1
 
                 case UpgradeCmd.CmdSendData://发送升级文件
                     id = "1444aaab";
-
+                    progressBar.Visible = true;
                     try
                     {
 //                         FileStream stream = new FileStream(mFilePath, FileMode.Open, FileAccess.Read);
@@ -1047,14 +1053,16 @@ namespace WindowsApplication1
                             }
 
                             SendUpData(id, data);
+                            progressBar.Value = Convert.ToInt32(1000 * reader.BaseStream.Position / reader.BaseStream.Length);
                             data = string.Empty;
                         }
                         else
                         {
+                            progressBar.Visible = false;
                             mSendDone = 1;
                             sendListBox.Items.Add("升级文件发送完成！");
-                            reader.Close();
-                            stream.Close();
+//                             reader.Close();
+//                             stream.Close();
                         }
                     }
                     catch(EndOfStreamException ex)
@@ -1063,8 +1071,9 @@ namespace WindowsApplication1
                     }
                     catch(Exception ex)
                     {
-                        MessageBox.Show("升级文件流有误！", "错误",
-                                        MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                        sendListBox.Items.Add(ex.Message);
+//                         MessageBox.Show(ex.Message, "错误",
+//                                         MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     }
 
 

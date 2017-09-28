@@ -461,7 +461,7 @@ namespace WindowsApplication1
             // 
             // timer_rec
             // 
-            this.timer_rec.Interval = 500;
+            this.timer_rec.Interval = 10;
             this.timer_rec.Tick += new System.EventHandler(this.timer_rec_Tick);
             // 
             // toolStrip

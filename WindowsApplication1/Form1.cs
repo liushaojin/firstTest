@@ -831,6 +831,8 @@ namespace WindowsApplication1
 
         private FileStream stream;
         private BinaryReader reader;//二进制读写器
+        private UInt32 mFileSize = 0;
+        private string mSizeStr = string.Empty;
         private void bmsUp_Click(object sender, EventArgs e)
         {
 
@@ -862,6 +864,10 @@ namespace WindowsApplication1
             stream = new FileStream(mFilePath, FileMode.Open, FileAccess.Read);
             reader = new BinaryReader(stream);//二进制读写器
             reader.BaseStream.Seek(0, SeekOrigin.Begin);
+
+            FileInfo fileInfo = new FileInfo(mFilePath);
+            mFileSize = (UInt32)fileInfo.Length + 7;
+            mSizeStr = (mFileSize & 0xff).ToString("X2") + " " + ((mFileSize >> 8) & 0xff).ToString("X2") + " " + ((mFileSize >> 16) & 0xff).ToString("X2") + " " + ((mFileSize >> 24) & 0xff).ToString("X2");
         }
 
         //发送升级数据
@@ -933,22 +939,32 @@ namespace WindowsApplication1
                         mUpCmd = UpgradeCmd.CmdUpgrade;
                         sendListBox.Items.Add("同主机Ping成功!");
                     }
+                    else
+                    {
+                        mUpCmd = UpgradeCmd.CmdPing;
+                    }
                 }
-                if (str.Contains("1442abaa"))    // && mPauseFlag == 0
+
+                if(str.Contains("1442abaa"))     // && mPauseFlag == 0
                 {
-                    if (obj.Data[1] == (byte)0xcc)
+                    if(obj.Data[1] == (byte)0xcc)
                     {
                         mUpCmd = UpgradeCmd.CmdNone;
                         //timerSend.Enabled = false;  //重启后要先关闭发送定时器
                         sendListBox.Items.Add("主机重启成功!");
                     }
                 }
-                if (str.Contains("1443abaa"))     // && mPauseFlag == 0
+
+                if(str.Contains("1443abaa"))      // && mPauseFlag == 0
                 {
                     if(obj.Data[1] == (byte)0xcc)
                     {
                         mUpCmd = UpgradeCmd.CmdSendData;
                         sendListBox.Items.Add("发送升级地址成功!");
+                    }
+                    else
+                    {
+                        mUpCmd = UpgradeCmd.CmdUpgrade;
                     }
                 }
 
@@ -1023,6 +1039,7 @@ namespace WindowsApplication1
                     data = "ff ff ff ff 4b b4 5a a5";
                     SendUpData(id, data);
                     sendListBox.Items.Add("同主机握手中Ping...");
+                    mUpCmd = UpgradeCmd.CmdNone;
                     break;
 
                 case UpgradeCmd.CmdRun://再发送运行命令
@@ -1030,13 +1047,15 @@ namespace WindowsApplication1
                     data = "ff 01 ff 01 3c 00 00 00";
                     SendUpData(id, data);
                     sendListBox.Items.Add("主机软复位重启中...");
+                    mUpCmd = UpgradeCmd.CmdNone;
                     break;
 
                 case UpgradeCmd.CmdUpgrade://再发送升级命令
                     id = "1443aaab";
-                    data = "00 40 00 00 af 9b 01 00";
+                    data = "00 40 00 00 " + mSizeStr;// af 9b 01 00";
                     SendUpData(id, data);
                     sendListBox.Items.Add("发送APP应用升级地址...");
+                    mUpCmd = UpgradeCmd.CmdNone;
                     break;
 
                 case UpgradeCmd.CmdSendData://发送升级文件
@@ -1071,14 +1090,15 @@ namespace WindowsApplication1
                         }
                         else
                         {
-                            if(mDoneCnt++ < 10)
+                            if(mDoneCnt++ < 2)
                             {
-                                mDoneCnt = 10;
+                                mDoneCnt = 2;
                                 progressBar.Visible = false;
                                 mSendDone = 1;
                                 sendListBox.Items.Add("升级文件发送完成！");
                                 data = "ff 01 ff 01 3c 00 00 00";
                                 SendUpData(id, data);
+                                mUpCmd = UpgradeCmd.CmdNone;
                             }
                         }
                     }

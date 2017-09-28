@@ -827,6 +827,8 @@ namespace WindowsApplication1
             }
         }
 
+        private FileStream stream;
+        private BinaryReader reader;//二进制读写器
         private void bmsUp_Click(object sender, EventArgs e)
         {
 
@@ -855,6 +857,9 @@ namespace WindowsApplication1
             mUpgradeFlag = 1;//升级标志置1
             timerSend.Enabled = m_bOpen == 1 ? true : false;//使能发送定时器
 
+            stream = new FileStream(mFilePath, FileMode.Open, FileAccess.Read);
+            reader = new BinaryReader(stream);//二进制读写器
+            reader.BaseStream.Seek(0, SeekOrigin.Begin);
         }
 
         //发送升级数据
@@ -922,6 +927,7 @@ namespace WindowsApplication1
                     if(obj.Data[1] == (byte)0xcc)
                     {
                         mUpCmd = UpgradeCmd.CmdUpgrade;
+                        sendListBox.Items.Add("同主机Ping成功!");
                     }
                 }
 
@@ -930,6 +936,7 @@ namespace WindowsApplication1
                     if(obj.Data[1] == (byte)0xcc)
                     {
                         mUpCmd = UpgradeCmd.CmdSendData;
+                        sendListBox.Items.Add("发送升级地址成功!");
                     }
                 }
 
@@ -938,6 +945,13 @@ namespace WindowsApplication1
                     if(obj.Data[1] == (byte)0x33)
                     {
                         mUpCmd = UpgradeCmd.CmdRun;
+                        sendListBox.Items.Add("升级成功!");
+                    }
+                    else if(mSendDone == 1)
+                    {
+                        mSendDone = 0;  //标志复位
+                        mUpCmd = UpgradeCmd.CmdRun;
+                        sendListBox.Items.Add("数据发送完成但未收到主机应答信号!");
                     }
                 }
 
@@ -963,6 +977,8 @@ namespace WindowsApplication1
         }
 
         private int jumpTime = 0;
+        private int mSendDone = 0;  //发送完成标志  
+
         private void timerSend_Tick(object sender, EventArgs e)
         {
             string id = string.Empty;
@@ -974,6 +990,7 @@ namespace WindowsApplication1
                     id = "1440aaab";
                     data = "00 cc cc cc cc cc cc cc";
                     SendUpData(id, data);
+                    sendListBox.Items.Add("正在从APP跳转到IAP中...");
 
                     if(jumpTime++ >= 10)
                     {
@@ -987,18 +1004,21 @@ namespace WindowsApplication1
                     id = "1441aaab";
                     data = "ff ff ff ff 4b b4 5a a5";
                     SendUpData(id, data);
+                    sendListBox.Items.Add("同主机握手中Ping...");
                     break;
 
                 case UpgradeCmd.CmdRun://再发送运行命令
                     id = "1442aaab";
                     data = "ff 01 ff 01 3c 00 00 00";
                     SendUpData(id, data);
+                    sendListBox.Items.Add("主机软复位重启中...");
                     break;
 
                 case UpgradeCmd.CmdUpgrade://再发送升级命令
                     id = "1443aaab";
                     data = "00 40 00 00 af 9b 01 00";
                     SendUpData(id, data);
+                    sendListBox.Items.Add("发送APP应用升级地址...");
                     break;
 
                 case UpgradeCmd.CmdSendData://发送升级文件
@@ -1006,21 +1026,40 @@ namespace WindowsApplication1
 
                     try
                     {
-                        FileStream stream = new FileStream(mFilePath, FileMode.Open, FileAccess.Read);
-                        BinaryReader reader = new BinaryReader(stream);//二进制读写器
-                        byte[] byteDat = reader.ReadBytes(8);
+//                         FileStream stream = new FileStream(mFilePath, FileMode.Open, FileAccess.Read);
+//                         BinaryReader reader = new BinaryReader(stream);//二进制读写器
+//                         reader.BaseStream.Seek(0, SeekOrigin.Begin);
 
-                        for(int i=0; i < 8; i++)
+                        if(reader.BaseStream.Position < reader.BaseStream.Length)
                         {
-                            if(i < 7)
+                            byte[] byteDat = reader.ReadBytes(8);
+
+                            for(int i=0; i < 8; i++)
                             {
-                                data += byteDat[i].ToString("X2") + " ";
+                                if(i < 7)
+                                {
+                                    data += byteDat[i].ToString("X2") + " ";
+                                }
+                                else
+                                {
+                                    data += byteDat[i].ToString("X2"); //System.Convert.ToString(obj.Data[j], 16)
+                                }
                             }
-                            else
-                            {
-                                data += byteDat[i].ToString("X2"); //System.Convert.ToString(obj.Data[j], 16)
-                            }
+
+                            SendUpData(id, data);
+                            data = string.Empty;
                         }
+                        else
+                        {
+                            mSendDone = 1;
+                            sendListBox.Items.Add("升级文件发送完成！");
+                            reader.Close();
+                            stream.Close();
+                        }
+                    }
+                    catch(EndOfStreamException ex)
+                    {
+                        sendListBox.Items.Add("升级文件发送完成！");
                     }
                     catch(Exception ex)
                     {
@@ -1028,7 +1067,7 @@ namespace WindowsApplication1
                                         MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     }
 
-                    SendUpData(id, data);
+
                     break;
 
                 default:

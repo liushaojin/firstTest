@@ -487,6 +487,8 @@ namespace WindowsApplication1
                     RevListBox.Items.Add(str);
                     RevListBox.SelectedIndex = RevListBox.Items.Count - 1;
                 }
+
+                str = string.Empty;
             }
 
             Marshal.FreeHGlobal(pt);

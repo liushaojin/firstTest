@@ -502,16 +502,15 @@ namespace WindowsApplication1
                 {
                     ReceiveDataHandle((UInt32)CanIndex.Can0);   //显示can0通道接收的数据
                 }
+                else if(m_canind == 1)
+                {
+                    ReceiveDataHandle((UInt32)CanIndex.Can1);   //显示can1通道接收的数据
+                }
                 else
-                    if(m_canind == 1)
-                    {
-                        ReceiveDataHandle((UInt32)CanIndex.Can1);   //显示can1通道接收的数据
-                    }
-                    else
-                    {
-                        ReceiveDataHandle((UInt32)CanIndex.Can0);
-                        ReceiveDataHandle((UInt32)CanIndex.Can1);   //显示can0、can1通道接收的数据
-                    }
+                {
+                    ReceiveDataHandle((UInt32)CanIndex.Can0);
+                    ReceiveDataHandle((UInt32)CanIndex.Can1);   //显示can0、can1通道接收的数据
+                }
             }
             else
             {
@@ -609,12 +608,11 @@ namespace WindowsApplication1
                 config.Timing0 = System.Convert.ToByte(can0T0TextBox.Text, 16);
                 config.Timing1 = System.Convert.ToByte(can0T1TextBox.Text, 16);
             }
-            else
-                if(canInd == 1)
-                {
-                    config.Timing0 = System.Convert.ToByte(can1T0TextBox.Text, 16);
-                    config.Timing1 = System.Convert.ToByte(can1T1TextBox.Text, 16);
-                }
+            else if(canInd == 1)
+            {
+                config.Timing0 = System.Convert.ToByte(can1T0TextBox.Text, 16);
+                config.Timing1 = System.Convert.ToByte(can1T1TextBox.Text, 16);
+            }
 
             config.AccCode = System.Convert.ToUInt32("0x" + textBox_AccCode.Text, 16);
             config.AccMask = System.Convert.ToUInt32("0x" + textBox_AccMask.Text, 16);
@@ -870,14 +868,15 @@ namespace WindowsApplication1
             FileInfo fileInfo = new FileInfo(mFilePath);
             mFileSize = (UInt32)fileInfo.Length;
 
-//             if(mFileSize % 8 > 0)
-//             {
-//                 mFileSize += (8 - mFileSize % 8);
-//             }
+            //             if(mFileSize % 8 > 0)
+            //             {
+            //                 mFileSize += (8 - mFileSize % 8);
+            //             }
 
             //mFileSize += 7;
-
             mSizeStr = (mFileSize & 0xff).ToString("X2") + " " + ((mFileSize >> 8) & 0xff).ToString("X2") + " " + ((mFileSize >> 16) & 0xff).ToString("X2") + " " + ((mFileSize >> 24) & 0xff).ToString("X2");
+
+            //mSizeStr = ((mFileSize >> 24) & 0xff).ToString("X2") + " " + ((mFileSize >> 16) & 0xff).ToString("X2") + " " + ((mFileSize >> 8) & 0xff).ToString("X2") + " " + (mFileSize & 0xff).ToString("X2");
         }
 
         //发送升级数据
@@ -907,14 +906,12 @@ namespace WindowsApplication1
                 sendobj.Data[i] = dat;
             }
 
-            sendListBox.Items.Add("报文ID: 0x" + id + "  发送数据: " + data);
+            sendListBox.Items.Add("报文ID: 0x" + id + "  发送数据: " + data + "    发送帧数: " + mSendFrameNum.ToString("X4"));
             sendListBox.SelectedIndex = sendListBox.Items.Count - 1;
 
             if(DllAdapte.VCI_Transmit(m_devtype, m_devind, canId, ref sendobj, 1) != 1)
             {
                 sendListBox.Items.Add("发送失败");
-                //                 MessageBox.Show("发送失败", "错误",
-                //                                 MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
 
@@ -959,6 +956,8 @@ namespace WindowsApplication1
                 {
                     if(obj.Data[1] == (byte)0xcc)
                     {
+                        mFrameSendFlag = 0;
+                        mUpgradeFlag = 0;
                         mUpCmd = UpgradeCmd.CmdNone;
                         //timerSend.Enabled = false;  //重启后要先关闭发送定时器
                         sendListBox.Items.Add("主机重启成功!");
@@ -972,29 +971,34 @@ namespace WindowsApplication1
                         mUpCmd = UpgradeCmd.CmdSendData;
                         sendListBox.Items.Add("发送升级地址成功!");
                     }
+                    else if(obj.Data[1] == (byte)0x33)
+                    {
+                        mUpCmd = UpgradeCmd.CmdNone;
+                        sendListBox.Items.Add("升级下载地址不符合FLASH空间大小!");
+                    }
                     else
-                        if(obj.Data[1] == (byte)0x33)
-                        {
-                            mUpCmd = UpgradeCmd.CmdNone;
-                            sendListBox.Items.Add("升级下载地址不符合FLASH空间大小!");
-                        }
-                        else
-                        {
-                            mUpCmd = UpgradeCmd.CmdUpgrade;
-                        }
+                    {
+                        mUpCmd = UpgradeCmd.CmdUpgrade;
+                    }
                 }
 
                 if(idStr.Contains("1444abaa"))     // && mPauseFlag == 0
                 {
                     if(obj.Data[1] == (byte)0x33)
                     {
+                        mRevFrameNum = 0;
                         progressBar.Visible = false;
                         mUpCmd = UpgradeCmd.CmdRun;
                         sendListBox.Items.Add("升级成功!");
                         reader.Close();
                         stream.Close();
                     }
+                    else if(obj.Data[1] == (byte)0xcc)
+                    {
+                        mUpCmd = UpgradeCmd.CmdSendData;
+                    }
                     else
+                    {
                         if(mSendDone == 1)
                         {
                             progressBar.Visible = false;
@@ -1002,6 +1006,12 @@ namespace WindowsApplication1
                             //mUpCmd = UpgradeCmd.CmdRun;
                             sendListBox.Items.Add("数据发送完成但未收到主机应答信号!");
                         }
+                        else
+                        {
+                            mUpCmd = UpgradeCmd.CmdNone;
+                            sendListBox.Items.Add("提示：主机在本帧中有丢失数据!");
+                        }
+                    }
                 }
 
                 if(obj.RemoteFlag == 0)
@@ -1024,7 +1034,12 @@ namespace WindowsApplication1
 
                 if(mPauseFlag == 0)
                 {
-                    RevListBox.Items.Add("报文ID: 0x" + idStr + "  接收数据: " + dataStr);
+                    if(mFrameSendFlag == 1)
+                    {
+                        mRevFrameNum++;
+                    }
+
+                    RevListBox.Items.Add("报文ID: 0x" + idStr + "  接收数据: " + dataStr + "    接收帧数: " + mRevFrameNum.ToString("X4"));
                     RevListBox.SelectedIndex = RevListBox.Items.Count - 1;
                 }
 
@@ -1038,6 +1053,120 @@ namespace WindowsApplication1
         private int mSendDone = 0;  //发送完成标志
         private int mDoneCnt = 0;
         private string lastData = string.Empty;
+        #if Debug
+        private void timerSend_Tick(object sender, EventArgs e)
+        {
+            string id = string.Empty;
+            string data = string.Empty;
+
+            switch(mUpCmd)
+            {
+                case UpgradeCmd.CmdJump://先app下载发送命令 ID:0x0040AAAB
+                    id = "1440aaab";
+                    data = "cc cc cc cc cc cc cc 00";
+                    SendUpData(id, data);
+                    sendListBox.Items.Add("正在从APP跳转到IAP中...");
+
+                    if(jumpTime++ >= 10)
+                    {
+                        jumpTime = 0;
+                        mUpCmd = UpgradeCmd.CmdPing;
+                    }
+
+                    break;
+
+                case UpgradeCmd.CmdPing://先发送ping命令 ID:0x1841AAAB
+                    id = "1441aaab";
+                    data = "a5 5a b4 4b ff ff ff ff";
+                    SendUpData(id, data);
+                    sendListBox.Items.Add("同主机握手中Ping...");
+                    mUpCmd = UpgradeCmd.CmdNone;
+                    break;
+
+                case UpgradeCmd.CmdRun://再发送运行命令
+                    id = "1442aaab";
+                    data = lastData;
+                    SendUpData(id, data);
+                    sendListBox.Items.Add("主机软复位重启中...");
+                    mUpCmd = UpgradeCmd.CmdNone;
+                    break;
+
+                case UpgradeCmd.CmdUpgrade://再发送升级命令
+                    id = "1443aaab";
+                    data = "00 40 00 00 " + mSizeStr;// af 9b 01 00";
+                    SendUpData(id, data);
+                    sendListBox.Items.Add("发送APP应用升级地址...");
+                    mUpCmd = UpgradeCmd.CmdNone;
+                    break;
+
+                case UpgradeCmd.CmdSendData://发送升级文件
+                    id = "1444aaab";
+                    progressBar.Visible = true;
+
+                    try
+                    {
+                        if(reader.BaseStream.Position < reader.BaseStream.Length)
+                        {
+                            byte[] byteDat = reader.ReadBytes(8);
+                            string str = string.Empty;
+
+                            for(int i = 8; i > 0; i--)
+                            {
+                                if(i >= byteDat.Length)
+                                {
+                                    str = "00";
+                                }
+                                else
+                                {
+                                    str = byteDat[i].ToString("X2");
+                                }
+
+                                if(i < 7)
+                                {
+                                    data += str + " ";
+                                }
+                                else
+                                {
+                                    data += str; //System.Convert.ToString(obj.Data[j], 16)
+                                }
+                            }
+
+                            SendUpData(id, data);
+                            progressBar.Value = Convert.ToInt32(1000 * reader.BaseStream.Position / reader.BaseStream.Length);
+                            lastData = data;
+                        }
+                        else
+                        {
+                            if(mDoneCnt++ < 2)
+                            {
+                                mDoneCnt = 2;
+                                progressBar.Visible = false;
+                                mSendDone = 1;
+                                sendListBox.Items.Add("升级文件发送完成！");
+                                data = lastData;
+                                SendUpData(id, data);
+                                mUpCmd = UpgradeCmd.CmdNone;
+                            }
+                        }
+                    }
+                    catch(EndOfStreamException ex)
+                    {
+                        sendListBox.Items.Add("升级文件发送完成！");
+                    }
+                    catch(Exception ex)
+                    {
+                        sendListBox.Items.Add(ex.Message);
+                    }
+
+                    break;
+
+                default:
+
+                    break;
+            }
+
+        }
+        #else
         private void timerSend_Tick(object sender, EventArgs e)
         {
             string id = string.Empty;
@@ -1089,53 +1218,15 @@ namespace WindowsApplication1
 
                     try
                     {
-                        //                         FileStream stream = new FileStream(mFilePath, FileMode.Open, FileAccess.Read);
-                        //                         BinaryReader reader = new BinaryReader(stream);//二进制读写器
-                        //                         reader.BaseStream.Seek(0, SeekOrigin.Begin);
-
-                        if(reader.BaseStream.Position < reader.BaseStream.Length)
-                        {
-                            byte[] byteDat = reader.ReadBytes(8);
-                            string str = string.Empty;
-
-                            for(int i=0; i < 8; i++)
-                            {
-                                if(i >= byteDat.Length)
-                                {
-                                    str = "00";
-                                }
-                                else
-                                {
-                                    str = byteDat[i].ToString("X2");
-                                }
-
-                                if(i < 7)
-                                {
-                                    data += str + " ";
-                                }
-                                else
-                                {
-                                    data += str; //System.Convert.ToString(obj.Data[j], 16)
-                                }
-                            }
-
-                            SendUpData(id, data);
-                            progressBar.Value = Convert.ToInt32(1000 * reader.BaseStream.Position / reader.BaseStream.Length);
-                            lastData = data;
-                        }
-                        else
-                        {
-                            if(mDoneCnt++ < 2)
-                            {
-                                mDoneCnt = 2;
-                                progressBar.Visible = false;
-                                mSendDone = 1;
-                                sendListBox.Items.Add("升级文件发送完成！");
-                                data = lastData;
-                                SendUpData(id, data);
-                                mUpCmd = UpgradeCmd.CmdNone;
-                            }
-                        }
+                        //连发8帧数据，缩短发送时间
+                        PackOneFrameData(ref id, ref data, ref reader);
+                        PackOneFrameData(ref id, ref data, ref reader);
+                        PackOneFrameData(ref id, ref data, ref reader);
+                        PackOneFrameData(ref id, ref data, ref reader);
+                        PackOneFrameData(ref id, ref data, ref reader);
+                        PackOneFrameData(ref id, ref data, ref reader);
+                        PackOneFrameData(ref id, ref data, ref reader);
+                        PackOneFrameData(ref id, ref data, ref reader);
                     }
                     catch(EndOfStreamException ex)
                     {
@@ -1144,10 +1235,10 @@ namespace WindowsApplication1
                     catch(Exception ex)
                     {
                         sendListBox.Items.Add(ex.Message);
-                        //                         MessageBox.Show(ex.Message, "错误",
-                        //                                         MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                        //MessageBox.Show(ex.Message, "错误",MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     }
 
+                    mUpCmd = UpgradeCmd.CmdNone;    //每8帧的发送
 
                     break;
 
@@ -1157,5 +1248,63 @@ namespace WindowsApplication1
             }
 
         }
+
+        private UInt32 mRevFrameNum = 0;//发送帧总数
+        private UInt32 mSendFrameNum = 0;//发送帧总数
+        private int mFrameSendFlag = 0;//帧发送标志
+        private void PackOneFrameData(ref string id, ref string data, ref BinaryReader reader)
+        {
+            mFrameSendFlag = 1;
+
+            if(reader.BaseStream.Position < reader.BaseStream.Length)
+            {
+                byte[] byteDat = reader.ReadBytes(8);
+                string str = string.Empty;
+
+                for(int i = 0; i < 8; i++)
+                {
+                    if(i >= byteDat.Length)
+                    {
+                        str = "00";
+                    }
+                    else
+                    {
+                        str = byteDat[i].ToString("X2");
+                    }
+
+                    if(i < 7)
+                    {
+                        data += str + " ";
+                    }
+                    else
+                    {
+                        data += str; //System.Convert.ToString(obj.Data[j], 16)
+                    }
+                }
+
+                mSendFrameNum++;
+                SendUpData(id, data);
+                progressBar.Value = Convert.ToInt32(1000 * reader.BaseStream.Position / reader.BaseStream.Length);
+                lastData = data;
+                data = string.Empty;
+            }
+            else
+            {
+                if(mDoneCnt++ < 2)
+                {
+                    mDoneCnt = 2;
+                    progressBar.Visible = false;
+                    mSendDone = 1;
+                    sendListBox.Items.Add("升级文件发送完成！");
+                    data = lastData;
+                    SendUpData(id, data);
+                    mUpCmd = UpgradeCmd.CmdNone;
+                    mSendFrameNum = 0;
+
+                }
+
+            }
+        }
+        #endif
     }
 }

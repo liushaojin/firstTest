@@ -1265,7 +1265,7 @@ namespace WindowsApplication1
                 {
                     if(i >= byteDat.Length)
                     {
-                        str = "00";
+                        str = string.Empty;// "00";
                     }
                     else
                     {

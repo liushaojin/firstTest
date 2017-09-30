@@ -1146,7 +1146,45 @@ namespace WindowsApplication1
 
         private void setBtn_Click(object sender, EventArgs e)
         {
+            SetForm setWin = new SetForm();
+            setWin.StartPosition = FormStartPosition.CenterParent;
+            //setWin.MdiParent = this;
+            //setWin.ShowDialog();    //子窗口的不关闭时，其它的窗口无法操作    //setWin.Show();
+            SingleShow(setWin);
+        }
 
+        /// <summary>
+        /// 显示唯一的窗体
+        /// </summary>
+        List<Form> formList = new List<Form>();
+        private void SingleShow(Form form)
+        {
+            //判断窗体是否已经弹出，默认false
+            bool hasform = false;
+            //遍历所有窗体对象
+            foreach (Form f in formList)
+            {
+                //判断弹出的窗体是否重复
+                if (f.Name == form.Name)
+                {
+                    //重复，修改为true
+                    hasform = true;
+                    f.WindowState = FormWindowState.Normal;
+                    //获取焦点
+                    f.Focus();
+                }
+            }
+            if (hasform)
+            {
+                form.Close();
+            }
+            else
+            {
+                //添加到所有窗体中
+                formList.Add(form);
+                //并打开该窗体
+                form.ShowDialog();
+            }
         }
 
         //接收数据帧的保存

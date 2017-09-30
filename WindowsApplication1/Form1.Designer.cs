@@ -955,6 +955,7 @@ namespace WindowsApplication1
             this.Controls.Add(this.menuStrip);
             this.Controls.Add(this.groupBox1);
             this.ForeColor = System.Drawing.Color.LawnGreen;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Name = "Form1";
             this.Text = "CAN调试软件";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);

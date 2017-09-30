@@ -1075,6 +1075,7 @@ namespace WindowsApplication1
                     catch(Exception ex)
                     {
                         mUpgradeFlag = 0;
+                        upgradeBtn.Enabled = true;
                         sendListBox.Items.Add(ex.Message);
                         //MessageBox.Show(ex.Message, "错误",MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     }

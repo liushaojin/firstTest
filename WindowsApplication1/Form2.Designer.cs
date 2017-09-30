@@ -53,16 +53,17 @@
             // 
             // devPage
             // 
+            this.devPage.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.devPage.Location = new System.Drawing.Point(22, 4);
             this.devPage.Name = "devPage";
             this.devPage.Padding = new System.Windows.Forms.Padding(3);
             this.devPage.Size = new System.Drawing.Size(554, 432);
             this.devPage.TabIndex = 0;
             this.devPage.Text = "设备区";
-            this.devPage.UseVisualStyleBackColor = true;
             // 
             // framePage
             // 
+            this.framePage.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.framePage.Controls.Add(this.groupBox1);
             this.framePage.Location = new System.Drawing.Point(22, 4);
             this.framePage.Name = "framePage";
@@ -70,7 +71,6 @@
             this.framePage.Size = new System.Drawing.Size(554, 432);
             this.framePage.TabIndex = 1;
             this.framePage.Text = "报文区";
-            this.framePage.UseVisualStyleBackColor = true;
             // 
             // groupBox1
             // 
@@ -83,19 +83,21 @@
             // 
             // userSetPage
             // 
+            this.userSetPage.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.userSetPage.Location = new System.Drawing.Point(22, 4);
             this.userSetPage.Name = "userSetPage";
             this.userSetPage.Size = new System.Drawing.Size(554, 432);
             this.userSetPage.TabIndex = 2;
             this.userSetPage.Text = "用户设置";
-            this.userSetPage.UseVisualStyleBackColor = true;
             // 
             // SetForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.Gray;
             this.ClientSize = new System.Drawing.Size(584, 442);
             this.Controls.Add(this.setTabControl);
+            this.ForeColor = System.Drawing.Color.LawnGreen;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "SetForm";
             this.Text = "设置";

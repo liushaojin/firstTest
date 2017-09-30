@@ -7,7 +7,7 @@ using System.Text;
 using System.IO;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
-
+using System.Threading;
 
 
 //1.ZLGCAN系列接口卡信息的数据类型。
@@ -442,9 +442,9 @@ namespace WindowsApplication1
                     str += "数据: ";
                     byte len = (byte)(obj.DataLen % 9);
 
-                    for (byte j = 0; j < len; j++)
+                    for(byte j = 0; j < len; j++)
                     {
-                        if (j == 0)
+                        if(j == 0)
                         {
                             str += obj.Data[j].ToString("X2");
                         }
@@ -598,6 +598,7 @@ namespace WindowsApplication1
             }
 
             connectM.Text = mIsOpen == 1 ? "断开" : "连接";
+            connectBtn.Text = connectM.Text;
             timer_rec.Enabled = mIsOpen == 1 ? true : false;
 
         }
@@ -667,12 +668,40 @@ namespace WindowsApplication1
             CanReset((UInt32)CanIndex.Can1);
         }
 
+        //一键连接
+        private void connectBtn_Click(object sender, EventArgs e)
+        {
+            connectM_Click(sender, e);
+            startM_Click(sender, e);
+        }
+
+        //一键升级
+        private void upgradeBtn_Click(object sender, EventArgs e)
+        {
+            bmsUp_Click(sender, e);
+        }
+
         private void label15_Click(object sender, EventArgs e)
         {
         }
 
         private void label4_Click(object sender, EventArgs e)
         {
+        }
+
+        //界面控件使能状态刷新
+        private void CtrlComEnableStateFlash()
+        {
+            if(mIsOpen == 1)
+            {
+                //设备打开时的相关控件使能控制
+                upgradeBtn.Enabled = true;
+            }
+            else
+            {
+                //设备关闭时的相关控件使能控制
+                upgradeBtn.Enabled = false;
+            }
         }
 
         private void can0GrpBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -797,6 +826,8 @@ namespace WindowsApplication1
             mFileSize = (UInt32)fileInfo.Length;
 
             mSizeStr = (mFileSize & 0xff).ToString("X2") + " " + ((mFileSize >> 8) & 0xff).ToString("X2") + " " + ((mFileSize >> 16) & 0xff).ToString("X2") + " " + ((mFileSize >> 24) & 0xff).ToString("X2");
+
+            upgradeBtn.Enabled = false;
         }
 
         //发送升级数据
@@ -893,6 +924,7 @@ namespace WindowsApplication1
                     }
                     else if(obj.Data[1] == (byte)0x33)
                     {
+                        mUpgradeFlag = 0;
                         mUpCmd = UpgradeCmd.CmdNone;
                         sendListBox.Items.Add("升级下载地址不符合FLASH空间大小!");
                     }
@@ -907,6 +939,7 @@ namespace WindowsApplication1
                     if(obj.Data[1] == (byte)0x33)
                     {
                         mRevFrameNum = 0;
+                        mUpgradeFlag = 0;
                         progressBar.Visible = false;
                         mUpCmd = UpgradeCmd.CmdRun;
                         sendListBox.Items.Add("升级成功!");
@@ -923,11 +956,13 @@ namespace WindowsApplication1
                         {
                             progressBar.Visible = false;
                             mSendDone = 0;  //标志复位
+                            mUpgradeFlag = 0;
                             //mUpCmd = UpgradeCmd.CmdRun;
                             sendListBox.Items.Add("数据发送完成但未收到主机应答信号!");
                         }
                         else
                         {
+                            mUpgradeFlag = 0;
                             mUpCmd = UpgradeCmd.CmdNone;
                             sendListBox.Items.Add("提示：主机在本帧中有丢失数据!");
                         }
@@ -976,6 +1011,9 @@ namespace WindowsApplication1
 
             switch(mUpCmd)
             {
+                case UpgradeCmd.CmdNone:
+                    break;
+
                 case UpgradeCmd.CmdJump://先app下载发送命令 ID:0x0040AAAB
                     id = "1440aaab";
                     data = "00 cc cc cc cc cc cc cc";
@@ -1036,6 +1074,7 @@ namespace WindowsApplication1
                     }
                     catch(Exception ex)
                     {
+                        mUpgradeFlag = 0;
                         sendListBox.Items.Add(ex.Message);
                         //MessageBox.Show(ex.Message, "错误",MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     }
@@ -1045,7 +1084,7 @@ namespace WindowsApplication1
                     break;
 
                 default:
-
+                    upgradeBtn.Enabled = true;
                     break;
             }
 
@@ -1105,5 +1144,83 @@ namespace WindowsApplication1
             }
         }
 
+        private void setBtn_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        //接收数据帧的保存
+        private void saveBtn_Click(object sender, EventArgs e)
+        {
+            string revFileName = string.Empty;
+            string revFilePath = string.Empty;
+
+            int count = RevListBox.Items.Count;
+
+            if(count <= 0)
+            {
+                return; //没有数据则返回
+            }
+
+            DateTime curTime = DateTime.Now;
+            SaveFileDialog saveDlg = new SaveFileDialog();
+            saveDlg.Filter = "文本文档(*.txt)|*.txt";
+            saveDlg.FilterIndex = 0;    //设置过滤下拉索引
+            saveDlg.RestoreDirectory = true;    //保存对话框是否记忆上次打开的目录
+            saveDlg.Title = "导出接收数据";
+            saveDlg.FileName = "接收数据" + curTime.ToString("yyyyMMddhhmmss");
+
+            if(saveDlg.ShowDialog() == DialogResult.OK)
+            {
+                if(saveDlg.FileName.Trim() == "")
+                {
+                    MessageBox.Show("请输入要保存的文件名", "提示");
+                    return;
+                }
+
+
+                Thread threadSave = new Thread(new ThreadStart(ExportRevData));
+                threadSave.Start();
+
+                /*线程中带参数的写法
+                threadHand1 = new Thread(()=>
+                {
+                threadHand1_Run(timeStart,timeEnd);
+                });
+                threadHand1.Start();
+                or
+
+                threadHand1 = new Thread(delegate(){threadHand1_Run(timeStart,timeEnd);});
+                threadHand1.Start();
+                */
+            }
+
+            //saveFileDialog.FileName = "报警记录报表"+now.Year.ToString().PadLeft(2) + now.Month.ToString().PadLeft(2, '0') + now.Day.ToString().PadLeft(2, '0') + "-" + now.Hour.ToString().PadLeft(2, '0') + now.Minute.ToString().PadLeft(2, '0') + now.Second.ToString().PadLeft(2, '0');
+            /*OpenFileDialog openFileDlg = new OpenFileDialog();  //调用打开文件对话框
+            openFileDlg.Filter = "文本文档(*.txt)|*.txt";   //设置文件过滤 "文档(*.doc;*.docx)|*.doc;*.docx";
+            if (openFileDlg.ShowDialog() == DialogResult.OK)    //等待对话框关闭
+            {
+                if (openFileDlg.FileName != "")
+                {
+                    revFileName = openFileDlg.FileName;
+                }
+            }*/
+        }
+
+        private void ExportRevData()
+        {
+            FileStream fileStream = new FileStream(mFilePath, FileMode.OpenOrCreate, FileAccess.Write);
+            StreamWriter fileWriter = new StreamWriter(fileStream, Encoding.UTF8);
+            //fileWriter.BaseStream.Seek(0, SeekOrigin.Begin);
+
+            for(int i=0; i<RevListBox.Items.Count; i++)
+            {
+                fileWriter.WriteLine(RevListBox.Items[i].ToString());
+            }
+
+            fileWriter.Flush();
+            fileWriter.Close();
+            fileStream.Close();
+        }
     }
 }

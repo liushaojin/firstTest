@@ -107,6 +107,10 @@ namespace WindowsApplication1
             this.richTextBox = new System.Windows.Forms.RichTextBox();
             this.timerSend = new System.Windows.Forms.Timer(this.components);
             this.progressBar = new System.Windows.Forms.ProgressBar();
+            this.connectBtn = new System.Windows.Forms.Button();
+            this.upgradeBtn = new System.Windows.Forms.Button();
+            this.setBtn = new System.Windows.Forms.Button();
+            this.saveBtn = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.tabControl.SuspendLayout();
@@ -118,6 +122,9 @@ namespace WindowsApplication1
             // groupBox1
             // 
             this.groupBox1.BackColor = System.Drawing.Color.Gray;
+            this.groupBox1.Controls.Add(this.saveBtn);
+            this.groupBox1.Controls.Add(this.setBtn);
+            this.groupBox1.Controls.Add(this.connectBtn);
             this.groupBox1.Controls.Add(this.pauseRevBtn);
             this.groupBox1.Controls.Add(this.clearRevBtn);
             this.groupBox1.Controls.Add(this.Can1Cb);
@@ -151,12 +158,12 @@ namespace WindowsApplication1
             this.groupBox1.Size = new System.Drawing.Size(530, 355);
             this.groupBox1.TabIndex = 4;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "设备参数";
+            this.groupBox1.Text = "接收区";
             // 
             // pauseRevBtn
             // 
             this.pauseRevBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.pauseRevBtn.Location = new System.Drawing.Point(446, 326);
+            this.pauseRevBtn.Location = new System.Drawing.Point(446, 329);
             this.pauseRevBtn.Name = "pauseRevBtn";
             this.pauseRevBtn.Size = new System.Drawing.Size(75, 23);
             this.pauseRevBtn.TabIndex = 25;
@@ -280,7 +287,7 @@ namespace WindowsApplication1
             this.comboBox_Mode.Items.AddRange(new object[] {
             "正常",
             "只听"});
-            this.comboBox_Mode.Location = new System.Drawing.Point(221, 334);
+            this.comboBox_Mode.Location = new System.Drawing.Point(221, 331);
             this.comboBox_Mode.Name = "comboBox_Mode";
             this.comboBox_Mode.Size = new System.Drawing.Size(70, 20);
             this.comboBox_Mode.TabIndex = 14;
@@ -295,7 +302,7 @@ namespace WindowsApplication1
             this.comboBox_Filter.Items.AddRange(new object[] {
             "双滤波",
             "单滤波"});
-            this.comboBox_Filter.Location = new System.Drawing.Point(67, 334);
+            this.comboBox_Filter.Location = new System.Drawing.Point(67, 331);
             this.comboBox_Filter.Name = "comboBox_Filter";
             this.comboBox_Filter.Size = new System.Drawing.Size(105, 20);
             this.comboBox_Filter.TabIndex = 15;
@@ -311,7 +318,7 @@ namespace WindowsApplication1
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(178, 338);
+            this.label8.Location = new System.Drawing.Point(178, 334);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(35, 12);
             this.label8.TabIndex = 7;
@@ -320,7 +327,7 @@ namespace WindowsApplication1
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(4, 338);
+            this.label7.Location = new System.Drawing.Point(3, 334);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(59, 12);
             this.label7.TabIndex = 8;
@@ -673,18 +680,19 @@ namespace WindowsApplication1
             // copyRightM
             // 
             this.copyRightM.Name = "copyRightM";
-            this.copyRightM.Size = new System.Drawing.Size(141, 22);
+            this.copyRightM.Size = new System.Drawing.Size(152, 22);
             this.copyRightM.Text = "版权(&C)";
             // 
             // userManualM
             // 
             this.userManualM.Name = "userManualM";
-            this.userManualM.Size = new System.Drawing.Size(141, 22);
+            this.userManualM.Size = new System.Drawing.Size(152, 22);
             this.userManualM.Text = "用户手册(&U)";
             // 
             // groupBox3
             // 
             this.groupBox3.BackColor = System.Drawing.Color.Gray;
+            this.groupBox3.Controls.Add(this.upgradeBtn);
             this.groupBox3.Controls.Add(this.sendListBox);
             this.groupBox3.Controls.Add(this.clearSendBtn);
             this.groupBox3.Controls.Add(this.listView);
@@ -704,7 +712,7 @@ namespace WindowsApplication1
             this.groupBox3.Size = new System.Drawing.Size(530, 249);
             this.groupBox3.TabIndex = 6;
             this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "发送数据";
+            this.groupBox3.Text = "发送区";
             // 
             // sendListBox
             // 
@@ -720,7 +728,7 @@ namespace WindowsApplication1
             // clearSendBtn
             // 
             this.clearSendBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.clearSendBtn.Location = new System.Drawing.Point(450, 221);
+            this.clearSendBtn.Location = new System.Drawing.Point(450, 220);
             this.clearSendBtn.Name = "clearSendBtn";
             this.clearSendBtn.Size = new System.Drawing.Size(71, 23);
             this.clearSendBtn.TabIndex = 14;
@@ -759,7 +767,7 @@ namespace WindowsApplication1
             // button_Send
             // 
             this.button_Send.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button_Send.Location = new System.Drawing.Point(320, 221);
+            this.button_Send.Location = new System.Drawing.Point(273, 220);
             this.button_Send.Name = "button_Send";
             this.button_Send.Size = new System.Drawing.Size(75, 23);
             this.button_Send.TabIndex = 5;
@@ -796,9 +804,9 @@ namespace WindowsApplication1
             "单次正常发送",
             "自发自收",
             "单次自发自收"});
-            this.comboBox_SendType.Location = new System.Drawing.Point(71, 196);
+            this.comboBox_SendType.Location = new System.Drawing.Point(67, 196);
             this.comboBox_SendType.Name = "comboBox_SendType";
-            this.comboBox_SendType.Size = new System.Drawing.Size(70, 20);
+            this.comboBox_SendType.Size = new System.Drawing.Size(75, 20);
             this.comboBox_SendType.TabIndex = 1;
             // 
             // label9
@@ -812,9 +820,9 @@ namespace WindowsApplication1
             // 
             // textBox_Data
             // 
-            this.textBox_Data.Location = new System.Drawing.Point(51, 222);
+            this.textBox_Data.Location = new System.Drawing.Point(45, 222);
             this.textBox_Data.Name = "textBox_Data";
-            this.textBox_Data.Size = new System.Drawing.Size(251, 21);
+            this.textBox_Data.Size = new System.Drawing.Size(222, 21);
             this.textBox_Data.TabIndex = 1;
             // 
             // label13
@@ -886,6 +894,50 @@ namespace WindowsApplication1
             this.progressBar.Size = new System.Drawing.Size(1008, 33);
             this.progressBar.Step = 1;
             this.progressBar.TabIndex = 15;
+            // 
+            // connectBtn
+            // 
+            this.connectBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.connectBtn.Location = new System.Drawing.Point(446, 282);
+            this.connectBtn.Name = "connectBtn";
+            this.connectBtn.Size = new System.Drawing.Size(75, 42);
+            this.connectBtn.TabIndex = 26;
+            this.connectBtn.Text = "连接";
+            this.connectBtn.UseVisualStyleBackColor = true;
+            this.connectBtn.Click += new System.EventHandler(this.connectBtn_Click);
+            // 
+            // upgradeBtn
+            // 
+            this.upgradeBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.upgradeBtn.Location = new System.Drawing.Point(361, 220);
+            this.upgradeBtn.Name = "upgradeBtn";
+            this.upgradeBtn.Size = new System.Drawing.Size(75, 23);
+            this.upgradeBtn.TabIndex = 16;
+            this.upgradeBtn.Text = "升级";
+            this.upgradeBtn.UseVisualStyleBackColor = true;
+            this.upgradeBtn.Click += new System.EventHandler(this.upgradeBtn_Click);
+            // 
+            // setBtn
+            // 
+            this.setBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.setBtn.Location = new System.Drawing.Point(355, 329);
+            this.setBtn.Name = "setBtn";
+            this.setBtn.Size = new System.Drawing.Size(81, 23);
+            this.setBtn.TabIndex = 27;
+            this.setBtn.Text = "设置";
+            this.setBtn.UseVisualStyleBackColor = true;
+            this.setBtn.Click += new System.EventHandler(this.setBtn_Click);
+            // 
+            // saveBtn
+            // 
+            this.saveBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.saveBtn.Location = new System.Drawing.Point(297, 329);
+            this.saveBtn.Name = "saveBtn";
+            this.saveBtn.Size = new System.Drawing.Size(51, 23);
+            this.saveBtn.TabIndex = 28;
+            this.saveBtn.Text = "保存";
+            this.saveBtn.UseVisualStyleBackColor = true;
+            this.saveBtn.Click += new System.EventHandler(this.saveBtn_Click);
             // 
             // Form1
             // 
@@ -1002,6 +1054,10 @@ namespace WindowsApplication1
         private System.Windows.Forms.Button pauseRevBtn;
         private System.Windows.Forms.Timer timerSend;
         private System.Windows.Forms.ProgressBar progressBar;
+        private System.Windows.Forms.Button connectBtn;
+        private System.Windows.Forms.Button upgradeBtn;
+        private System.Windows.Forms.Button setBtn;
+        private System.Windows.Forms.Button saveBtn;
     }
 }
 

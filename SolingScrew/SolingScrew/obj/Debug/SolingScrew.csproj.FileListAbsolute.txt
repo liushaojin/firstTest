@@ -1,0 +1,13 @@
+d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\bin\Debug\SolingScrew.exe.config
+d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\bin\Debug\SolingScrew.exe
+d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\bin\Debug\SolingScrew.pdb
+d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.csprojResolveAssemblyReference.cache
+d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.solingScrew.resources
+d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.Properties.Resources.resources
+d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.csproj.GenerateResource.Cache
+d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.exe
+d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.pdb
+d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.Login.resources
+d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.SysSetting.resources
+d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.UI.PointSetting.resources
+d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.UI.CpkCalculate.resources

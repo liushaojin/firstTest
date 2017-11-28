@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -47,6 +48,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataDal\DataEndian.cs" />
+    <Compile Include="DataDal\ModbusTcpComm.cs" />
+    <Compile Include="DataDal\RegisterDat.cs" />
+    <Compile Include="DataDal\SerialComm.cs" />
+    <Compile Include="FileOpAPI\IniFileHelper.cs" />
+    <Compile Include="UI\BaseForm\NumTextBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="UI\CpkCalculate.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -73,11 +82,23 @@
     <Compile Include="UI\PointSetting.Designer.cs">
       <DependentUpon>PointSetting.cs</DependentUpon>
     </Compile>
+    <Compile Include="UI\SingleInputDlg.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\SingleInputDlg.Designer.cs">
+      <DependentUpon>SingleInputDlg.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\SysSetting.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="UI\SysSetting.Designer.cs">
       <DependentUpon>SysSetting.cs</DependentUpon>
+    </Compile>
+    <Compile Include="XYGraph\XYChat.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="XYGraph\XYChat.Designer.cs">
+      <DependentUpon>XYChat.cs</DependentUpon>
     </Compile>
     <EmbeddedResource Include="UI\CpkCalculate.resx">
       <DependentUpon>CpkCalculate.cs</DependentUpon>
@@ -101,8 +122,14 @@
     <EmbeddedResource Include="UI\PointSetting.resx">
       <DependentUpon>PointSetting.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="UI\SingleInputDlg.resx">
+      <DependentUpon>SingleInputDlg.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="UI\SysSetting.resx">
       <DependentUpon>SysSetting.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="XYGraph\XYChat.resx">
+      <DependentUpon>XYChat.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -128,7 +155,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="AccessBll\" />
-    <Folder Include="DataDal\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

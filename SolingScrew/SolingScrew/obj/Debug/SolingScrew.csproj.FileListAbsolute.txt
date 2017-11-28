@@ -1,13 +1,86 @@
-d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\bin\Debug\SolingScrew.exe.config
-d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\bin\Debug\SolingScrew.exe
-d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\bin\Debug\SolingScrew.pdb
-d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.csprojResolveAssemblyReference.cache
-d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.solingScrew.resources
-d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.Properties.Resources.resources
-d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.csproj.GenerateResource.Cache
-d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.exe
-d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.pdb
-d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.Login.resources
-d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.SysSetting.resources
-d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.UI.PointSetting.resources
-d:\我的文档\visual studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.UI.CpkCalculate.resources
+D:\SourceCode\GitPrj\finern\SolingScrew\SolingScrew\bin\Debug\SolingScrew.exe.config
+D:\SourceCode\GitPrj\finern\SolingScrew\SolingScrew\obj\Debug\SolingScrew.exe
+D:\SourceCode\GitPrj\finern\SolingScrew\SolingScrew\obj\Debug\SolingScrew.pdb
+D:\SourceCode\GitPrj\finern\SolingScrew\SolingScrew\obj\Debug\SolingScrew.csprojResolveAssemblyReference.cache
+D:\SourceCode\GitPrj\finern\SolingScrew\SolingScrew\obj\Debug\SolingScrew.UI.CpkCalculate.resources
+D:\SourceCode\GitPrj\finern\SolingScrew\SolingScrew\obj\Debug\SolingScrew.solingScrew.resources
+D:\SourceCode\GitPrj\finern\SolingScrew\SolingScrew\obj\Debug\SolingScrew.Login.resources
+D:\SourceCode\GitPrj\finern\SolingScrew\SolingScrew\obj\Debug\SolingScrew.Properties.Resources.resources
+D:\SourceCode\GitPrj\finern\SolingScrew\SolingScrew\obj\Debug\SolingScrew.UI.PointSetting.resources
+D:\SourceCode\GitPrj\finern\SolingScrew\SolingScrew\obj\Debug\SolingScrew.SysSetting.resources
+D:\SourceCode\GitPrj\finern\SolingScrew\SolingScrew\obj\Debug\SolingScrew.csproj.GenerateResource.Cache
+D:\SourceCode\GitPrj\finern\SolingScrew\SolingScrew\bin\Debug\SolingScrew.exe
+D:\SourceCode\GitPrj\finern\SolingScrew\SolingScrew\bin\Debug\SolingScrew.pdb
+D:\我的文档\Visual Studio 2015\Projects\SolingScrew\SolingScrew\bin\Debug\SolingScrew.exe.config
+D:\我的文档\Visual Studio 2015\Projects\SolingScrew\SolingScrew\bin\Debug\SolingScrew.exe
+D:\我的文档\Visual Studio 2015\Projects\SolingScrew\SolingScrew\bin\Debug\SolingScrew.pdb
+D:\我的文档\Visual Studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.UI.CpkCalculate.resources
+D:\我的文档\Visual Studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.solingScrew.resources
+D:\我的文档\Visual Studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.Login.resources
+D:\我的文档\Visual Studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.Properties.Resources.resources
+D:\我的文档\Visual Studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.UI.PointSetting.resources
+D:\我的文档\Visual Studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.SysSetting.resources
+D:\我的文档\Visual Studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.XYGraph.XYChat.resources
+D:\我的文档\Visual Studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.csproj.GenerateResource.Cache
+D:\我的文档\Visual Studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.exe
+D:\我的文档\Visual Studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.pdb
+D:\我的文档\Visual Studio 2015\Projects\SolingScrew\SolingScrew\obj\Debug\SolingScrew.csprojResolveAssemblyReference.cache
+D:\SolingScrew\SolingScrew\bin\Debug\SolingScrew.exe.config
+D:\SolingScrew\SolingScrew\obj\Debug\SolingScrew.exe
+D:\SolingScrew\SolingScrew\obj\Debug\SolingScrew.pdb
+D:\SolingScrew\SolingScrew\bin\Debug\SolingScrew.exe
+D:\SolingScrew\SolingScrew\bin\Debug\SolingScrew.pdb
+D:\SolingScrew\SolingScrew\obj\Debug\SolingScrew.csprojResolveAssemblyReference.cache
+D:\SolingScrew\SolingScrew\obj\Debug\SolingScrew.UI.CpkCalculate.resources
+D:\SolingScrew\SolingScrew\obj\Debug\SolingScrew.solingScrew.resources
+D:\SolingScrew\SolingScrew\obj\Debug\SolingScrew.Login.resources
+D:\SolingScrew\SolingScrew\obj\Debug\SolingScrew.Properties.Resources.resources
+D:\SolingScrew\SolingScrew\obj\Debug\SolingScrew.UI.PointSetting.resources
+D:\SolingScrew\SolingScrew\obj\Debug\SolingScrew.SysSetting.resources
+D:\SolingScrew\SolingScrew\obj\Debug\SolingScrew.XYGraph.XYChat.resources
+D:\SolingScrew\SolingScrew\obj\Debug\SolingScrew.csproj.GenerateResource.Cache
+D:\芬能项目\SolingScrew\SolingScrew\bin\Debug\SolingScrew.exe.config
+D:\芬能项目\SolingScrew\SolingScrew\obj\Debug\SolingScrew.exe
+D:\芬能项目\SolingScrew\SolingScrew\obj\Debug\SolingScrew.pdb
+D:\芬能项目\SolingScrew\SolingScrew\bin\Debug\SolingScrew.exe
+D:\芬能项目\SolingScrew\SolingScrew\bin\Debug\SolingScrew.pdb
+D:\芬能项目\SolingScrew\SolingScrew\obj\Debug\SolingScrew.csprojResolveAssemblyReference.cache
+D:\芬能项目\SolingScrew\SolingScrew\obj\Debug\SolingScrew.UI.CpkCalculate.resources
+D:\芬能项目\SolingScrew\SolingScrew\obj\Debug\SolingScrew.solingScrew.resources
+D:\芬能项目\SolingScrew\SolingScrew\obj\Debug\SolingScrew.Login.resources
+D:\芬能项目\SolingScrew\SolingScrew\obj\Debug\SolingScrew.Properties.Resources.resources
+D:\芬能项目\SolingScrew\SolingScrew\obj\Debug\SolingScrew.UI.PointSetting.resources
+D:\芬能项目\SolingScrew\SolingScrew\obj\Debug\SolingScrew.SysSetting.resources
+D:\芬能项目\SolingScrew\SolingScrew\obj\Debug\SolingScrew.XYGraph.XYChat.resources
+D:\芬能项目\SolingScrew\SolingScrew\obj\Debug\SolingScrew.csproj.GenerateResource.Cache
+D:\luoshiji\SolingScrew\SolingScrew\bin\Debug\SolingScrew.exe.config
+D:\luoshiji\SolingScrew\SolingScrew\obj\Debug\SolingScrew.exe
+D:\luoshiji\SolingScrew\SolingScrew\obj\Debug\SolingScrew.pdb
+D:\luoshiji\SolingScrew\SolingScrew\bin\Debug\SolingScrew.exe
+D:\luoshiji\SolingScrew\SolingScrew\bin\Debug\SolingScrew.pdb
+D:\luoshiji\SolingScrew\SolingScrew\obj\Debug\SolingScrew.csprojResolveAssemblyReference.cache
+D:\luoshiji\SolingScrew\SolingScrew\obj\Debug\SolingScrew.UI.CpkCalculate.resources
+D:\luoshiji\SolingScrew\SolingScrew\obj\Debug\SolingScrew.solingScrew.resources
+D:\luoshiji\SolingScrew\SolingScrew\obj\Debug\SolingScrew.Login.resources
+D:\luoshiji\SolingScrew\SolingScrew\obj\Debug\SolingScrew.Properties.Resources.resources
+D:\luoshiji\SolingScrew\SolingScrew\obj\Debug\SolingScrew.UI.PointSetting.resources
+D:\luoshiji\SolingScrew\SolingScrew\obj\Debug\SolingScrew.SysSetting.resources
+D:\luoshiji\SolingScrew\SolingScrew\obj\Debug\SolingScrew.XYGraph.XYChat.resources
+D:\luoshiji\SolingScrew\SolingScrew\obj\Debug\SolingScrew.csproj.GenerateResource.Cache
+D:\芬能项目\SolingScrew\SolingScrew\obj\Debug\SolingScrew.UI.SingleInputDlg.resources
+D:\luoshiji\SolingScrew\SolingScrew\obj\Debug\SolingScrew.UI.SingleInputDlg.resources
+D:\visual\SolingScrew\SolingScrew\bin\Debug\SolingScrew.exe.config
+D:\visual\SolingScrew\SolingScrew\obj\Debug\SolingScrew.exe
+D:\visual\SolingScrew\SolingScrew\obj\Debug\SolingScrew.pdb
+D:\visual\SolingScrew\SolingScrew\bin\Debug\SolingScrew.exe
+D:\visual\SolingScrew\SolingScrew\bin\Debug\SolingScrew.pdb
+D:\visual\SolingScrew\SolingScrew\obj\Debug\SolingScrew.csprojResolveAssemblyReference.cache
+D:\visual\SolingScrew\SolingScrew\obj\Debug\SolingScrew.UI.CpkCalculate.resources
+D:\visual\SolingScrew\SolingScrew\obj\Debug\SolingScrew.solingScrew.resources
+D:\visual\SolingScrew\SolingScrew\obj\Debug\SolingScrew.Login.resources
+D:\visual\SolingScrew\SolingScrew\obj\Debug\SolingScrew.Properties.Resources.resources
+D:\visual\SolingScrew\SolingScrew\obj\Debug\SolingScrew.UI.PointSetting.resources
+D:\visual\SolingScrew\SolingScrew\obj\Debug\SolingScrew.UI.SingleInputDlg.resources
+D:\visual\SolingScrew\SolingScrew\obj\Debug\SolingScrew.SysSetting.resources
+D:\visual\SolingScrew\SolingScrew\obj\Debug\SolingScrew.XYGraph.XYChat.resources
+D:\visual\SolingScrew\SolingScrew\obj\Debug\SolingScrew.csproj.GenerateResource.Cache

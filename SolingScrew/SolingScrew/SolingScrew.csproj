@@ -49,7 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataDal\DataEndian.cs" />
-    <Compile Include="DataDal\ModbusTcpComm.cs" />
+    <Compile Include="DataDal\ProExpertDev.cs" />
     <Compile Include="DataDal\RegisterDat.cs" />
     <Compile Include="DataDal\SerialComm.cs" />
     <Compile Include="FileOpAPI\IniFileHelper.cs" />

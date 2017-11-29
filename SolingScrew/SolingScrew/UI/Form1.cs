@@ -78,9 +78,12 @@ namespace SolingScrew
         float torsionUp = 0;        //扭力上限
         float torsionDown = 0;      //扭力下限
         
-        private ReadPlcCtrlCmd curPlcCmd = ReadPlcCtrlCmd.ReadW3300; //当前读取的PLC控制状态
+        private ReadPlcCtrlCmd curPlcCmd = ReadPlcCtrlCmd.None; //当前读取的PLC控制状态
         private ReadPointCmd curPointCmd = ReadPointCmd.None;   //当前读取的点的值
         private ReadErrorCmd curErrorCmd = ReadErrorCmd.ReadW20000;   //当前读取的报警信息
+        
+        private bool readTorsionEnableFlag = false; //扭力采集便能标志
+        private bool completeOneScrewFlag = false;      //打完一个螺丝
         
         private string curProduct = string.Empty;   //当前操作的产品
         private bool sendToPlcFlag = true;  //是否发送点位信息到PLC,只有在刚打开上位机或切换产品时才需发送点位信息
@@ -90,8 +93,10 @@ namespace SolingScrew
         DataTable mDt = new DataTable();
         XYChat torsionCurve = new XYChat();
         IniFileHelper iniFileOp = new IniFileHelper();
+        ProExpertDev dianpi1 = new ProExpertDev("192.168.0.1");
+        ProExpertDev dianpi2 = new ProExpertDev("192.168.0.2");
         SerialComm comm = SerialComm.GetScomInstance();
-        ModbusTcpComm modTcp = ModbusTcpComm.GetTcpInstance();
+        //ProExpertDev modTcp = ProExpertDev.GetTcpInstance();
         
         private delegate void ModbusDataHandler(string dat);
         private delegate void ShortDataHandler(short addr, List<short> list);
@@ -109,15 +114,18 @@ namespace SolingScrew
         private void solingScrew_Load(object sender, EventArgs e)
         {
             comm.ScomInit();
-            modTcp.ModbusTcpInit();
-            listBox1.Items.Add(modTcp.ErrorStr);
+            //dianpi1.ModbusTcpInit();
+            listBox1.Items.Add(dianpi1.ErrorStr);
+            listBox1.Items.Add(dianpi2.ErrorStr);
             TableInit();
             XYCharInit();
             comm.scomDataReceived += new SerialComm.ScomDataReceivedHandler(CommDataReceived);
             comm.bitDataReceived += new SerialComm.BitDataReceivedHandler(WrDataReceived);
             comm.wordDataReceived += new SerialComm.WordDataReceivedHandler(DmDataReceived);
-            modTcp.modTcpDataReceived += new ModbusTcpComm.ModTcpDataReceivedHandler(ModbusDataReceived);
-            modTcp.shortDataReceived += new ModbusTcpComm.ShortDataReceiveHandle(ShortDataReceived);
+            dianpi1.modTcpDataReceived += new ProExpertDev.ModTcpDataReceivedHandler(ModbusDataReceived);
+            dianpi1.shortDataReceived += new ProExpertDev.ShortDataReceiveHandle(ShortDataReceived);
+            dianpi2.modTcpDataReceived += new ProExpertDev.ModTcpDataReceivedHandler(ModbusDataReceived);
+            dianpi2.shortDataReceived += new ProExpertDev.ShortDataReceiveHandle(ShortDataReceived);
             //comm.ScomSendData("@00TS--PC to PLC communication test success--");
             //comm.ScomSendData("@00RD20000002");
             //comm.ScomSendData("@00WD20000100");
@@ -139,13 +147,22 @@ namespace SolingScrew
                 listBox1.Items.Add("串口打开失败");
             }
             
-            if(modTcp.Connected)
+            if(dianpi1.Connected)
             {
-                listBox1.Items.Add("Modbus TCP连接成功");
+                listBox1.Items.Add("电批1控制器连接成功");
             }
             else
             {
-                listBox1.Items.Add("Modbus TCP连接失败");
+                listBox1.Items.Add("电批1控制器连接失败");
+            }
+            
+            if(dianpi2.Connected)
+            {
+                listBox1.Items.Add("电批2控制器连接成功");
+            }
+            else
+            {
+                listBox1.Items.Add("电批2控制器连接失败");
             }
             
             tcpTimer.Enabled = true;
@@ -310,31 +327,38 @@ namespace SolingScrew
                 UpdateTableAndWave(addr, list);
             }
         }
+        //private int mPointNum = 0;//
         private void UpdateTableAndWave(short addr, List<short> list)
         {
+            int rows = dataGridView1.RowCount;   //添加数据前先获取表格中现有的行数
+            
             for(int i = 0; i < list.Count; i++)
             {
+                int j = rows + i;   //新数据要添加到的行的索引
                 float torsion = ((float)list[i] / 10000);
-                dataGridView1.Rows[i].Cells[0].Value = string.Format("点{0}", i);
-                dataGridView1.Rows[i].Cells[1].Value = torsion;
-                dataGridView1.Rows[i].Cells[2].Value = torsionUp;
-                dataGridView1.Rows[i].Cells[3].Value = torsionDown;
+                dataGridView1.Rows[j].Cells[0].Value = string.Format("点{0}", i);
+                dataGridView1.Rows[j].Cells[1].Value = torsion;
+                dataGridView1.Rows[j].Cells[2].Value = torsionUp;
+                dataGridView1.Rows[j].Cells[3].Value = torsionDown;
                 totalScrewNum++;
                 testNum.Text = totalScrewNum.ToString();
                 
                 if(torsion >= torsionDown && torsion <= torsionUp)
                 {
                     passNum++;
-                    dataGridView1.Rows[i].Cells[4].Value = "Pass";
+                    dataGridView1.Rows[j].Cells[4].Value = "Pass";
                 }
                 else
                 {
                     failNum++;
-                    dataGridView1.Rows[i].Cells[4].Value = "Fail";
+                    dataGridView1.Rows[j].Cells[4].Value = "Fail";
                 }
                 
                 passRate = passNum / totalScrewNum * 100;
                 straitRate.Text = string.Format("{0}%", passRate.ToString("f2"));   //passRate.ToString("f2");
+                //根据最新点位及扭力数据更新波形图
+                PointF point = new PointF(j, torsion);
+                SetChart(chart1, point);
             }
         }
         /// <summary>
@@ -378,14 +402,15 @@ namespace SolingScrew
             //先查询PLC的状态
             switch(curPlcCmd)
             {
-                case ReadPlcCtrlCmd.None:
-                    break;
-                    
                 case ReadPlcCtrlCmd.ReadW3300:      //先查询PLC是否启动工控机
                     if(dat.Length == 1)
                     {
                         plcStatus[0] = (dat[0] == "01") ? 1 : 0;
-                        curPlcCmd = ReadPlcCtrlCmd.ReadW3301;
+                        
+                        if(plcStatus[0] == 1)
+                        {
+                            curPlcCmd = ReadPlcCtrlCmd.ReadW3301;//若启动工控机，则切换到下一个状态
+                        }
                     }
                     
                     break;
@@ -394,18 +419,36 @@ namespace SolingScrew
                     if(dat.Length == 1)
                     {
                         plcStatus[1] = (dat[0] == "01") ? 1 : 0;
+                        
+                        if(plcStatus[1] == 1)
+                        {
+                            curPlcCmd = ReadPlcCtrlCmd.ReadW3302;//若打完一个螺丝，则切换到下一个状态
+                            completeOneScrewFlag = true;
+                        }
+                        else
+                        {
+                            completeOneScrewFlag = false;
+                        }
                     }
                     
-                    curPlcCmd = ReadPlcCtrlCmd.ReadW3302;
                     break;
                     
                 case ReadPlcCtrlCmd.ReadW3302:      //先查询PLC是否启动工控机采集扭矩
                     if(dat.Length == 1)
                     {
                         plcStatus[2] = (dat[0] == "01") ? 1 : 0;
+                        
+                        if(plcStatus[2] == 1)
+                        {
+                            curPlcCmd = ReadPlcCtrlCmd.ReadW3303;//若启动工控机采集扭矩，则使能扭力的采集并切换到下一个状态
+                            readTorsionEnableFlag = true;   //使能扭力采集
+                        }
+                        else
+                        {
+                            readTorsionEnableFlag = false;  //禁能扭力采集
+                        }
                     }
                     
-                    curPlcCmd = ReadPlcCtrlCmd.ReadW3303;
                     break;
                     
                 case ReadPlcCtrlCmd.ReadW3303:      //先查询PLC是否允许参数写入
@@ -483,6 +526,25 @@ namespace SolingScrew
                     
                 default:
                     break;
+            }
+            
+            //对PLC状态返回的处理
+            if(plcStatus[1] == 1)
+            {
+                completeOneScrewFlag = true;    //完成置位
+            }
+            else
+            {
+                completeOneScrewFlag = false;   //未完成复位
+            }
+            
+            if(plcStatus[2] == 1)
+            {
+                readTorsionEnableFlag = true;   //使能扭力采集
+            }
+            else
+            {
+                readTorsionEnableFlag = false;  //禁能扭力采集
             }
             
             string errorStr = string.Empty;
@@ -784,8 +846,15 @@ namespace SolingScrew
             //发送完点位信息后，就要查询PLC当前的控制状态和报警信息
             PollPLCStatus();
             ReadErrorFromPLC(); //读取错误信息
-            byte[] bytes = new byte[] { 0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x01, 0x03, 0x00, 0x33, 0x00, 0x01};
-            modTcp.ReadDataByFc03(17, 1);
+            
+            //读取扭力值
+            if(readTorsionEnableFlag)   //使能扭力采集时发送扭力采集指令
+            {
+                byte[] bytes = new byte[] { 0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x01, 0x03, 0x00, 0x33, 0x00, 0x01};
+                dianpi1.ReadDataByFc03(17, 1);
+                dianpi2.ReadDataByFc03(17, 1);
+            }
+            
             Random ran = new Random();
             int RandKey = ran.Next(2, 4);
             datY = (float)1.23 * RandKey;
@@ -883,10 +952,10 @@ namespace SolingScrew
                     comm.WriteDMData(addrDp + 2 * curSendPoint, dp);
                     comm.WriteDMData(addrPe + 2 * curSendPoint, pe);
                 }
+                
+                string msg = string.Format("{0} - 点{1}: {2}", curTime, curSendPoint + 1, curPointList[curSendPoint]);
+                listBox1.Items.Add(msg);
             }
-            
-            string msg = string.Format("{0} - 点{1}: {2}", curTime, curSendPoint + 1, curPointList[curSendPoint]);
-            listBox1.Items.Add(msg);
             
             if(++curSendPoint >= curPointList.Count)
             {

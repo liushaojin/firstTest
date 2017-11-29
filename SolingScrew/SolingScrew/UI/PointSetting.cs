@@ -322,6 +322,9 @@ namespace SolingScrew.UI
             UpdatePointCombo();
         }
         
+        /// <summary>
+        /// 更新产品列表框
+        /// </summary>
         private void UpdateProductCombo()
         {
             //加载产品名称
@@ -353,6 +356,9 @@ namespace SolingScrew.UI
             curProductName = secList[0];
         }
         
+        /// <summary>
+        /// 更新点位列表框
+        /// </summary>
         private void UpdatePointCombo()
         {
             //加载当前产品的点位信息

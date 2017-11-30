@@ -14,12 +14,40 @@ namespace SolingScrew.UI
     using SolingScrew.FileOpAPI;
     public partial class PointSetting : Form
     {
+        /// <summary>
+        /// 读取一个点的值
+        /// </summary>
+        public enum ReadPointState
+        {
+            None,       //读取实时点位坐标
+            ReadX1,     //读取点的X1坐标值
+            ReadZ1,     //读取点的Z1坐标值
+            ReadY,      //读取点的Y坐标值
+            ReadX2,     //读取点的X2坐标值
+            ReadZ2,     //读取点的Z2坐标值
+            ReadDp,     //读取电批
+            Readm,      //读取面
+        }
+        
+        public struct OnePoint
+        {
+            public string x1;
+            public string z1;
+            public string y;
+            public string x2;
+            public string z2;
+            public string dp;
+            public string m;
+        }
+        
         private string curProductName = string.Empty;   //当前选择的产品名称
         private string curPoint = string.Empty;         //当前选择的点位
         private string curOpProduct = string.Empty;     //当前操作的产品
+        private ReadPointState curReadCoordinate = ReadPointState.None;//当前正在读取的坐标
         
         List<string> productNameList = new List<string>();  //产品名称的链表
         List<string> pointList = new List<string>();  //产品点位信息链表
+        List<OnePoint> pointsList = new List<OnePoint>();   //点信息链表
         
         DataTable mDt = new DataTable();
         SerialComm comm = SerialComm.GetScomInstance();
@@ -34,7 +62,8 @@ namespace SolingScrew.UI
         {
             TableInit();
             LoadData();
-            comm.ReadDMDatas(250, 5);  //进入点位界面就要去读取实时点位信息
+            //comm.ReadDMDatas(250, 5);  //进入点位界面就要去读取实时点位信息
+            readTimer.Enabled = true;   //便能读取定时器
             comm.wordDataReceived += new SerialComm.WordDataReceivedHandler(DataReceived);
         }
         
@@ -56,15 +85,92 @@ namespace SolingScrew.UI
                 }
             }
         }
-        private void ShowPointVal(string[] point)
+        private void ShowPointVal(string[] points)
         {
+            OnePoint point = new OnePoint();
+            
+            if(points.Length <= 0)
+            {
+                return;
+            }
+            
             try
             {
-                x1Pos.Text = point[0];
-                z1Pos.Text = point[1];
-                yPos.Text = point[2];
-                x2Pos.Text = point[3];
-                z2Pos.Text = point[4];
+                switch(curReadCoordinate)
+                {
+                    case ReadPointState.None:
+                        x1Pos.Text = points[0];
+                        z1Pos.Text = points[1];
+                        yPos.Text = points[2];
+                        x2Pos.Text = points[3];
+                        z2Pos.Text = points[4];
+                        
+                        if(initialFlag)
+                        {
+                            curReadCoordinate = ReadPointState.ReadX1;
+                        }
+                        
+                        break;
+                        
+                    case ReadPointState.ReadX1:
+                        point.x1 = points[0];
+                        curReadCoordinate = ReadPointState.ReadZ1;
+                        break;
+                        
+                    case ReadPointState.ReadZ1:
+                        point.z1 = points[0];
+                        curReadCoordinate = ReadPointState.ReadY;
+                        break;
+                        
+                    case ReadPointState.ReadY:
+                        point.y = points[0];
+                        curReadCoordinate = ReadPointState.ReadX2;
+                        break;
+                        
+                    case ReadPointState.ReadX2:
+                        point.x2 = points[0];
+                        curReadCoordinate = ReadPointState.ReadZ2;
+                        break;
+                        
+                    case ReadPointState.ReadZ2:
+                        point.z2 = points[0];
+                        curReadCoordinate = ReadPointState.ReadDp;
+                        break;
+                        
+                    case ReadPointState.ReadDp:
+                        point.dp = points[0];
+                        curReadCoordinate = ReadPointState.Readm;
+                        break;
+                        
+                    case ReadPointState.Readm:
+                        point.m = points[0];
+                        curReadCoordinate = ReadPointState.None;
+                        pointsList.Add(point);
+                        
+                        if(++pointIndex >= 30)
+                        {
+                            initialFlag = false;    //30个点位数据读取完了就复位初始化标志
+                            ClearTable();//先清空表格再添加新的数据
+                            
+                            //加载读取到的点位信息到表格中去
+                            for(int i = 0; i < pointsList.Count; i++)
+                            {
+                                OnePoint apoint = pointsList[i];
+                                dataGridView1.Rows[0].Cells[i + 1].Value = apoint.x1;
+                                dataGridView1.Rows[1].Cells[i + 1].Value = apoint.z1;
+                                dataGridView1.Rows[2].Cells[i + 1].Value = apoint.y;
+                                dataGridView1.Rows[3].Cells[i + 1].Value = apoint.x2;
+                                dataGridView1.Rows[4].Cells[i + 1].Value = apoint.z2;
+                                dataGridView1.Rows[5].Cells[i + 1].Value = apoint.dp;
+                                dataGridView1.Rows[6].Cells[i + 1].Value = apoint.m;
+                            }
+                        }
+                        
+                        break;
+                        
+                    default:
+                        break;
+                }
             }
             catch(Exception ex)
             {
@@ -226,25 +332,17 @@ namespace SolingScrew.UI
                 mDt.Rows.Add(row);
             }
             
-            // 添加行
-            //             DataRow row = mDt.NewRow();
-            //             row["点位"] = "x10001";
-            //             row["扭力值(kgf.cm)"] = "345";
-            //             row["上限(kgf.cm)"] = "368";
-            //             row["下限(kgf.cm)"] = "300";
-            //             row["结果"] = "正常";
-            //             mDt.Rows.Add(row);
+            //添加行
+            //DataRow row = mDt.NewRow();
+            //row["点位"] = "x10001";
+            //mDt.Rows.Add(row);
             /*for (int i = 0; i < dataGridView1.Height / dataGridView1.RowTemplate.Height - 2; i++)
                 //for (int i = 0; i < dataGridView1.Height / dataGridView1.RowTemplate.Height; i++)
                 //for(int i=0; i<25; i++)
             {
                 // 添加空白行
                 DataRow blankRow = mDt.NewRow();
-                //                 row["点位"] = "x10001";
-                //                 row["扭力值(kgf.cm)"] = "345";
-                //                 row["上限(kgf.cm)"] = "368";
-                //                 row["下限(kgf.cm)"] = "300";
-                //                 row["结果"] = "正常";
+                //row["点位"] = "x10001";
                 mDt.Rows.Add(blankRow);
             }*/
             dataGridView1.DataSource = mDt;
@@ -280,21 +378,10 @@ namespace SolingScrew.UI
             //设置标题字段(先把ColumnsHeadersVisible设置为true)
             //dataGridView1.Columns[0].HeaderText = "点位";
             //设置属性
-            //             DataGridTableStyle tablestyle = new DataGridTableStyle();
-            //             this.dataGridView1.TableStyles.Add(tablestyle);
-            //             dataGridView1.TableStyles[0].GridColumnStyles[0].Width = 75;
-            //             dataGridView1.TableStyles[0].GridColumnStyles[1].Width = 75;
-            //             dataGridView1.TableStyles[0].GridColumnStyles[2].Width = 75;
-            //             dataGridView1.TableStyles[0].GridColumnStyles[3].Width = 75;
-            //             dataGridView1.TableStyles[0].GridColumnStyles[4].Width = 75;
-            //             dataGridView1.TableStyles[0].GridColumnStyles[5].Width = 120;
+            //DataGridTableStyle tablestyle = new DataGridTableStyle();
+            //this.dataGridView1.TableStyles.Add(tablestyle);
+            //dataGridView1.TableStyles[0].GridColumnStyles[0].Width = 75;
             //dataGridView1.Rows[0].HeaderCell.Value = "x1";
-            //dataGridView1.Rows[1].HeaderCell.Value = "z1";
-            //dataGridView1.Rows[2].HeaderCell.Value = "y";
-            //dataGridView1.Rows[3].HeaderCell.Value = "x2";
-            //dataGridView1.Rows[4].HeaderCell.Value = "z2";
-            //dataGridView1.Rows[5].HeaderCell.Value = "电批";
-            //dataGridView1.Rows[6].HeaderCell.Value = "面";
             //dataGridView1.RowHeadersWidth = 30;
             //dataGridView1.RowHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             //dataGridView1.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.DisableResizing;
@@ -319,7 +406,6 @@ namespace SolingScrew.UI
         private void LoadData()
         {
             UpdateProductCombo();
-            UpdatePointCombo();
         }
         
         /// <summary>
@@ -342,18 +428,73 @@ namespace SolingScrew.UI
             
             if(secList.Count <= 0)
             {
+                initialFlag = true; //初始化标志置位
                 return;
             }
             
             foreach(string sec in secList)
             {
                 productNameList.Add(sec);
-                //productCombo.Items.Add(sec);
             }
             
             productCombo.Items.AddRange(secList.ToArray());
             productCombo.SelectedIndex = 0;
             curProductName = secList[0];
+            UpdatePointCombo();
+        }
+        
+        private int dm2000 = 2000;  //读取所有30个点位的值的起始地址
+        private int dm250 = 250;    //读取点位的当前值的起始地址
+        private int startAddr = 250;
+        private int pointIndex = 0; //读取的点位的索引
+        private bool initialFlag = false;   //默认只读取当前点位信息，只有初始化标志置位时，才会读取所有30个点位的值
+        private void readTimer_Tick(object sender, EventArgs e)
+        {
+            ReadPLCPointData();    //读取实时点位坐标数据
+        }
+        
+        /// <summary>
+        /// 读取PLC中存储的点位数据，以便编辑
+        /// </summary>
+        private void ReadPLCPointData()
+        {
+            switch(curReadCoordinate)
+            {
+                case ReadPointState.None:
+                    comm.ReadDMDatas(dm250, 5);
+                    break;
+                    
+                case ReadPointState.ReadX1:
+                    comm.ReadDMData(dm2000 + pointIndex * 2);
+                    break;
+                    
+                case ReadPointState.ReadZ1:
+                    comm.ReadDMData(dm2000 + 100 + pointIndex * 2);
+                    break;
+                    
+                case ReadPointState.ReadY:
+                    comm.ReadDMData(dm2000 + 200 + pointIndex * 2);
+                    break;
+                    
+                case ReadPointState.ReadX2:
+                    comm.ReadDMData(dm2000 + 300 + pointIndex * 2);
+                    break;
+                    
+                case ReadPointState.ReadZ2:
+                    comm.ReadDMData(dm2000 + 400 + pointIndex * 2);
+                    break;
+                    
+                case ReadPointState.ReadDp:
+                    comm.ReadDMData(dm2000 + 500 + pointIndex * 2);
+                    break;
+                    
+                case ReadPointState.Readm:
+                    comm.ReadDMData(dm2000 + 600 + pointIndex * 2);
+                    break;
+                    
+                default:
+                    break;
+            }
         }
         
         /// <summary>
@@ -610,5 +751,7 @@ namespace SolingScrew.UI
         {
             this.DialogResult = DialogResult.OK;
         }
+        
+        
     }
 }

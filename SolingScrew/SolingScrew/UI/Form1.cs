@@ -82,7 +82,7 @@ namespace SolingScrew
         private ReadPointCmd curPointCmd = ReadPointCmd.None;   //当前读取的点的值
         private ReadErrorCmd curErrorCmd = ReadErrorCmd.ReadW20000;   //当前读取的报警信息
         
-        private bool readTorsionEnableFlag = false; //扭力采集便能标志
+        private bool readTorsionEnableFlag = false;     //扭力采集便能标志
         private bool completeOneScrewFlag = false;      //打完一个螺丝
         
         private string curProduct = string.Empty;   //当前操作的产品
@@ -848,7 +848,7 @@ namespace SolingScrew
             ReadErrorFromPLC(); //读取错误信息
             
             //读取扭力值
-            if(readTorsionEnableFlag)   //使能扭力采集时发送扭力采集指令
+            if(readTorsionEnableFlag || completeOneScrewFlag)   //使能扭力采集时发送扭力采集指令
             {
                 byte[] bytes = new byte[] { 0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x01, 0x03, 0x00, 0x33, 0x00, 0x01};
                 dianpi1.ReadDataByFc03(17, 1);

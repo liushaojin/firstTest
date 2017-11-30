@@ -39,7 +39,7 @@ namespace SolingScrew.DataDal
     /// <summary>
     /// 操作数据所在存储区的类型枚举
     /// </summary>
-    enum AreaDataType
+    enum DataArea
     {
         AreaNone,
         CIOBit,         //30
@@ -103,7 +103,7 @@ namespace SolingScrew.DataDal
         private ScomError scomErr = ScomError.ScomNormal;
         private bool scomIsOpen = false;
         private CmdType curOpCmd = CmdType.CmdNone;
-        private AreaDataType curOpArea = AreaDataType.AreaNone; //实时记录当前读的区域类型,以便数据解析
+        private DataArea curOpArea = DataArea.AreaNone; //实时记录当前读的区域类型,以便数据解析
         private DataType curOpData = DataType.FloatData;    //记录当前读操作的数据类型
         private int curReadNum = 0; //实时记录当前读数据的个数
         private int curAddr = 0;    //实时记录当前数据操作地址
@@ -260,7 +260,6 @@ namespace SolingScrew.DataDal
             scom.DataReceived += new SerialDataReceivedEventHandler(ScomDataReceived);
         }
         
-        //byte[] tempByteArray;
         private string recTemp = string.Empty;
         /// <summary>
         /// 串口接收数据处理函数
@@ -326,7 +325,10 @@ namespace SolingScrew.DataDal
             //实现数据的解码与显示
             //DecodeData(ReDatas);
         }
-        
+        /// <summary>
+        /// 接收数据的解析
+        /// </summary>
+        /// <param name="idat"></param>
         public void DecodeReceiveData(string idat)
         {
             string dat = idat.Substring(0, idat.Length - 4);    //移除FCS两个校验字符及一个分隔符和一个结束符等后面4个字符串
@@ -352,7 +354,7 @@ namespace SolingScrew.DataDal
                                 
                                 switch(curOpArea)   //根据之前发送的读指令中的数据操作区，解析收到的数据
                                 {
-                                    case AreaDataType.WRBit:
+                                    case DataArea.WRBit:
                                         string[] bitArray = new string[subStr.Length / 2];
                                         
                                         for(int i = 0; i < subStr.Length / 2; i++)
@@ -363,7 +365,7 @@ namespace SolingScrew.DataDal
                                         bitDataReceived(bitArray);   //抛出数据接收事件
                                         break;
                                         
-                                    case AreaDataType.DMWord:
+                                    case DataArea.DMWord:
                                         //中间化的十六进制数据
                                         string[] wordArray = new string[subStr.Length / 4];
                                         
@@ -471,92 +473,128 @@ namespace SolingScrew.DataDal
         }
         
         /// <summary>
-        /// 将消息编码并发送
+        /// 同步收发数据的处理
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void SendData(string data)
+        /// <param name="addr"></param>
+        /// <param name="len"></param>
+        /// <returns></returns>
+        private string[] ReadBaseData(int addr, int len, CmdType cmdType, DataArea datArea)
         {
-            int codeType = 0;
+            string revDat = string.Empty;
+            curAddr = addr;
+            curReadNum = len;
+            curOpArea = datArea;
+            string cmdstr = FormatCmd(cmdType, datArea);
+            cmdstr = string.Format("{0}{1}00{2}", cmdstr, addr.ToString("X4"), len.ToString("X4"));
+            ScomSendData(cmdstr);
+            //int itemp = scom.BytesToRead;
+            //byte[] ReDatas = new byte[itemp];       //开辟接收缓冲区
+            //scom.Read(ReDatas, 0, ReDatas.Length);  //从串口读取数据
+            //revDat = System.Text.Encoding.Default.GetString(ReDatas);
+            revDat = scom.ReadExisting(); //这里存在一个问题，即本该一帧数据一起读，但实际情况是分两次读的，再说一发送完读命令就接收能保证接收到数据吗
             
-            if(data.Length > 0)
+            if(CheckFCS(revDat))
             {
-                data += "\n";
+                string dat = revDat.Substring(0, revDat.Length - 4);    //移除FCS两个校验字符及一个分隔符和一个结束符等后面4个字符串
+                
+                //判断是否是hostlink协议数据
+                if(!string.IsNullOrEmpty(dat))
+                {
+                    try
+                    {
+                        string subStr = dat.Substring(0, 15);    //尝试获取固定的开头字符串“@00FA0040000000”
+                        
+                        if(subStr == "@00FA0040000000")
+                        {
+                            subStr = dat.Substring(15, 4);
+                            
+                            if(subStr == "0101")     //判断是否是读返回
+                            {
+                                subStr = dat.Substring(19, 4);    //判断是否出错
+                                
+                                if(subStr == "0000")     //正常时的处理
+                                {
+                                    subStr = dat.Substring(23);    //获取数据字符串
+                                    
+                                    switch(datArea)    //根据之前发送的读指令中的数据操作区，解析收到的数据
+                                    {
+                                        case DataArea.WRBit:
+                                            string[] bitArray = new string[subStr.Length / 2];
+                                            
+                                            for(int i = 0; i < subStr.Length / 2; i++)
+                                            {
+                                                bitArray[i] = Convert.ToInt32(subStr.Substring(i * 2, 2), 10).ToString();
+                                            }
+                                            
+                                            return bitArray;
+                                            
+                                        //break;
+                                        
+                                        case DataArea.DMWord:
+                                            //中间化的十六进制数据
+                                            string[] wordArray = new string[subStr.Length / 4];
+                                            
+                                            for(int i = 0; i < subStr.Length / 4; i++)
+                                            {
+                                                wordArray[i] = subStr.Substring(i * 4, 4);
+                                            }
+                                            
+                                            //可视化的十进制数据
+                                            string[] valueArray = new string[wordArray.Length / 2];
+                                            
+                                            for(int i = 0; i < wordArray.Length / 2; i++)
+                                            {
+                                                string dataL = wordArray[i * 2];  //获取数据高字部分
+                                                string dataH = wordArray[i * 2 + 1];  //获取数据低字部分
+                                                
+                                                if(curOpData == DataType.IntData)
+                                                {
+                                                    valueArray[i] = Convert.ToInt32(dataH + dataL, 10).ToString(); //int.Parse(dataH + data);
+                                                }
+                                                else if(curOpData == DataType.FloatData)
+                                                {
+                                                    valueArray[i] = HexToFloat(dataH + dataL).ToString("f2");    //将16进制字符串
+                                                }
+                                            }
+                                            
+                                            return valueArray;
+                                            
+                                        //break;
+                                        
+                                        default:
+                                            break;
+                                    }
+                                }
+                                else//出错处理
+                                {
+                                }
+                            }
+                            else if(subStr == "0102")     //判断是否是写返回
+                            {
+                                subStr = dat.Substring(19, 4);    //判断是否出错
+                                string[] res = new string[1];     //写入成功返回“@00FA004000000001020000 FA*/”
+                                
+                                if(subStr == "0000")       //正常时的处理
+                                {
+                                    res[0] = "1";   //写入成功
+                                }
+                                else
+                                {
+                                    res[0] = "0";   //写入失败
+                                }
+                            }
+                        }
+                    }
+                    catch(Exception ex)
+                    {
+                    }
+                }
             }
             
-            byte[] sendData = null;
-            
-            if(codeType == 0)
-            {
-                sendData = Encoding.ASCII.GetBytes(data);
-            }
-            else if(codeType == 1)
-            {
-                sendData = Encoding.UTF8.GetBytes(data);
-            }
-            else if(codeType == 2)
-            {
-                sendData = Encoding.Unicode.GetBytes(data);
-            }
-            else
-            {
-                sendData = strToHexByte(data);
-            }
-            
-            SendData(sendData);
+            return null;
         }
         
-        /// <summary>
-        /// 此函数将编码后的消息传递给串口
-        /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        public bool SendData(byte[] data)
-        {
-            if(scom.IsOpen)
-            {
-                try
-                {
-                    //将消息传递给串口
-                    scom.Write(data, 0, data.Length);
-                    return true;
-                }
-                catch(Exception ex)
-                {
-                    //MessageBox.Show(ex.Message, "发送失败", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-            else
-            {
-                //MessageBox.Show("串口未开启", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            
-            return false;
-        }
         
-        /// <summary>
-        /// 16进制编码
-        /// </summary>
-        /// <param name="hexString"></param>
-        /// <returns></returns>
-        public static byte[] strToHexByte(string hexString)
-        {
-            hexString = hexString.Replace(" ", "");
-            
-            if((hexString.Length % 2) != 0)
-            {
-                hexString += " ";
-            }
-            
-            byte[] returnBytes = new byte[hexString.Length / 2];
-            
-            for(int i = 0; i < returnBytes.Length; i++)
-            {
-                returnBytes[i] = Convert.ToByte(hexString.Substring(i * 2, 2).Replace(" ", ""), 16);
-            }
-            
-            return returnBytes;
-        }
         
         /// <summary>
         /// 数据发送
@@ -604,6 +642,30 @@ namespace SolingScrew.DataDal
         }
         
         /// <summary>
+        /// 将字符串转换成16进制字节数组
+        /// </summary>
+        /// <param name="hexString"></param>
+        /// <returns></returns>
+        public static byte[] strToHexByte(string hexString)
+        {
+            hexString = hexString.Replace(" ", ""); //删除字符串中的空格
+            
+            if((hexString.Length % 2) != 0)
+            {
+                hexString += " ";   //补全字符串的长度为2的整数倍
+            }
+            
+            byte[] returnBytes = new byte[hexString.Length / 2];
+            
+            for(int i = 0; i < returnBytes.Length; i++)
+            {
+                returnBytes[i] = Convert.ToByte(hexString.Substring(i * 2, 2).Replace(" ", ""), 16);
+            }
+            
+            return returnBytes;
+        }
+        
+        /// <summary>
         /// 转换十六进制字符串到字节数组
         /// </summary>
         /// <param name="msg">待转换字符串</param>
@@ -611,13 +673,12 @@ namespace SolingScrew.DataDal
         public static byte[] HexToByte(string msg)
         {
             msg = msg.Replace(" ", "");    //移除空格
-            //create a byte array the length of the
-            //divided by 2 (Hex is 2 characters in length)
+            //创建一个长度为字符串长度的二分之一的字节数组，一个字节用16进制表示就占用2个字符
             byte[] comBuffer = new byte[msg.Length / 2];
             
             for(int i = 0; i < msg.Length; i += 2)
             {
-                //convert each set of 2 characters to a byte and add to the array
+                //将每2个字符转换成一个字节并添加到数组中去
                 comBuffer[i / 2] = (byte) Convert.ToByte(msg.Substring(i, 2), 16);
             }
             
@@ -631,15 +692,6 @@ namespace SolingScrew.DataDal
         /// <returns>十六进制字符串</returns>
         public static string ByteToHex(byte[] comByte)
         {
-            ////StringBuilder builder = new StringBuilder(comByte.Length * 3);
-            //string strRtn = "";
-            //foreach (byte data in comByte)
-            //{
-            //    //builder.Append(Convert.ToString(data, 16).PadLeft(2, '0').PadRight(3, ' '));
-            //    strRtn += Convert.ToString(data, 16) + " ";
-            //}
-            ////return builder.ToString().ToUpper();
-            //return strRtn;
             string returnStr = "";
             
             if(comByte != null)
@@ -658,7 +710,7 @@ namespace SolingScrew.DataDal
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        private string FormatCmd(CmdType cmdType, AreaDataType areaType)
+        private string FormatCmd(CmdType cmdType, DataArea areaType)
         {
             string cmdStr = "@00FA000000000";  //读写指令字符串的前缀
             
@@ -673,11 +725,11 @@ namespace SolingScrew.DataDal
             }
             
             //再拼接操作区代码
-            if(areaType == AreaDataType.DMWord)
+            if(areaType == DataArea.DMWord)
             {
                 cmdStr += "82";
             }
-            else if(areaType == AreaDataType.WRBit)
+            else if(areaType == DataArea.WRBit)
             {
                 cmdStr += "31";
             }
@@ -694,8 +746,8 @@ namespace SolingScrew.DataDal
             
             curAddr = addr;
             curReadNum = len;
-            curOpArea = AreaDataType.WRBit;
-            string cmdstr = FormatCmd(CmdType.CmdRead, AreaDataType.WRBit);
+            curOpArea = DataArea.WRBit;
+            string cmdstr = FormatCmd(CmdType.CmdRead, DataArea.WRBit);
             cmdstr = string.Format("{0}{1}{2}{3}", cmdstr, addr.ToString("X4"), start.ToString("X2"), len.ToString("X4"));
             ScomSendData(cmdstr);
         }
@@ -713,8 +765,8 @@ namespace SolingScrew.DataDal
             
             curAddr = addr;
             curReadNum = len;
-            curOpArea = AreaDataType.WRBit;
-            string cmdstr = FormatCmd(CmdType.CmdRead, AreaDataType.WRBit);
+            curOpArea = DataArea.WRBit;
+            string cmdstr = FormatCmd(CmdType.CmdRead, DataArea.WRBit);
             cmdstr = string.Format("{0}{1}00{2}", cmdstr, addr.ToString("X4"), len.ToString("X4"));
             ScomSendData(cmdstr);
         }
@@ -728,8 +780,8 @@ namespace SolingScrew.DataDal
         {
             curAddr = addr;
             curReadNum = 1;
-            curOpArea = AreaDataType.DMWord;
-            string cmdstr = FormatCmd(CmdType.CmdRead, AreaDataType.DMWord);
+            curOpArea = DataArea.DMWord;
+            string cmdstr = FormatCmd(CmdType.CmdRead, DataArea.DMWord);
             cmdstr = string.Format("{0}{1}000001", cmdstr, addr.ToString("X4"));
             ScomSendData(cmdstr);
         }
@@ -743,8 +795,8 @@ namespace SolingScrew.DataDal
         {
             curAddr = addr;
             curReadNum = len * 2;
-            curOpArea = AreaDataType.DMWord;
-            string cmdstr = FormatCmd(CmdType.CmdRead, AreaDataType.DMWord);
+            curOpArea = DataArea.DMWord;
+            string cmdstr = FormatCmd(CmdType.CmdRead, DataArea.DMWord);
             cmdstr = string.Format("{0}{1}00{2}", cmdstr, addr.ToString("X4"), curReadNum.ToString("X4"));
             ScomSendData(cmdstr);
         }
@@ -782,7 +834,7 @@ namespace SolingScrew.DataDal
         /// <param name="data"></param>
         public void WriteWRData(int addr, int data)
         {
-            string cmdstr = FormatCmd(CmdType.CmdWrite, AreaDataType.WRBit);
+            string cmdstr = FormatCmd(CmdType.CmdWrite, DataArea.WRBit);
             cmdstr = string.Format("{0}{1}000001{2}", cmdstr, addr.ToString("X4"), data.ToString("X4"));
             ScomSendData(cmdstr);
         }
@@ -794,7 +846,7 @@ namespace SolingScrew.DataDal
         /// <param name="data"></param>
         public void WriteDMData(int addr, int data)
         {
-            string cmdstr = FormatCmd(CmdType.CmdWrite, AreaDataType.DMWord);
+            string cmdstr = FormatCmd(CmdType.CmdWrite, DataArea.DMWord);
             cmdstr = string.Format("{0}{1}000001{2}", cmdstr, addr.ToString("X4"), data.ToString("X4"));
             ScomSendData(cmdstr);
         }
@@ -806,7 +858,7 @@ namespace SolingScrew.DataDal
         /// <param name="data"></param>
         public void WriteDMData(int addr, float data)
         {
-            string cmdstr = FormatCmd(CmdType.CmdWrite, AreaDataType.DMWord);
+            string cmdstr = FormatCmd(CmdType.CmdWrite, DataArea.DMWord);
             cmdstr = string.Format("{0}{1}000002{2}", cmdstr, addr.ToString("X4"), FloatToHex(data));
             ScomSendData(cmdstr);
         }
@@ -825,7 +877,7 @@ namespace SolingScrew.DataDal
                 datStr = string.Format("{0}{1}", datStr, datas[i].ToString("X4"));
             }
             
-            string cmdstr = FormatCmd(CmdType.CmdWrite, AreaDataType.DMWord);
+            string cmdstr = FormatCmd(CmdType.CmdWrite, DataArea.DMWord);
             cmdstr = string.Format("{0}{1}00{2}{3}", cmdstr, addr.ToString("X4"), len.ToString("X4"), datStr);
             ScomSendData(cmdstr);
         }
@@ -844,7 +896,7 @@ namespace SolingScrew.DataDal
                 datStr = string.Format("{0}{1}", datStr, FloatToHex(datas[i]));       //FloatToHex(data)
             }
             
-            string cmdstr = FormatCmd(CmdType.CmdWrite, AreaDataType.DMWord);
+            string cmdstr = FormatCmd(CmdType.CmdWrite, DataArea.DMWord);
             cmdstr = string.Format("{0}{1}00{2}{3}", cmdstr, addr.ToString("X4"), len.ToString("X4"), datStr);
             ScomSendData(cmdstr);
         }
